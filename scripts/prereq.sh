@@ -93,7 +93,7 @@ function clone_git()
     cd ${HOME}/environment
     rm -rf ack.gitlab ack.codecommit
     git clone https://github.com/ajrajkumar/crossplane-rds-gitops-workshop ack.gitlab
-    git clone https://git-codecommit.${AWS_REGION}.amazonaws.com/v1/repos/ack-rds-gitops-workshop ack.codecommit
+    git clone https://git-codecommit.${AWS_REGION}.amazonaws.com/v1/repos/crossplane-rds-gitops-workshop ack.codecommit
     cd ack.codecommit
     cp -rp ../ack.gitlab/* .
     print_line
@@ -232,17 +232,6 @@ function install_c9()
     print_line
 }
 
-function install_aws_provider()
-{
-
-   print_line
-   echo "Installing AWS provider"
-   up controlplane provider install xpkg.upbound.io/upbound/provider-aws:v0.26.0
-   kubectl get providers
-   echo "Installed AWS Providers"
-}
-
-
 function install_crossplane()
 {
     print_line
@@ -253,6 +242,19 @@ function install_crossplane()
     /usr/local/bin/up uxp install
     kubectl get pods -n upbound-system
     print_line
+    echo "Waiting for the controller plane is up and running"
+    typeset -i counter=0
+    while [ $counter -lt 10 ]
+    do
+        pods=`kubectl get pods -n ${CROSSPLANE_NAMESPACE} | grep Running | wc -l`
+	if [ ${pods} -ge 4 ]; then
+            echo "Crossplane pods started successfully"
+            break
+	fi
+	sleep 10
+	counter=$counter+1
+    done
+
 }
 
 
@@ -290,9 +292,21 @@ spec:
   package: xpkg.upbound.io/upbound/provider-aws:v0.27.0
   controllerConfigRef:
     name: irsa-controllerconfig " | kubectl apply -f -
-   
-  echo "Installing provider config"
 
+    echo "Waiting for the provider to be available"
+    typeset -i counter=0
+    while [ $counter -lt 30 ]
+    do
+        pods=`kubectl get pods -n ${CROSSPLANE_NAMESPACE} | grep provider-aws | grep Running | wc -l`
+	if [ ${pods} -eq 1 ]; then
+            echo "Crossplane AWS provider started successfully"
+            break
+	fi
+	sleep 10
+	counter=$counter+1
+    done
+
+  echo "Installing provider config"
   echo "apiVersion: aws.upbound.io/v1beta1
 kind: ProviderConfig
 metadata:
@@ -300,7 +314,6 @@ metadata:
 spec:
   credentials:
     source: IRSA" | kubectl apply -f -
-
 }
 
 
@@ -376,29 +389,29 @@ else
 fi
 
 echo "Process started at `date`"
-##install_packages
+install_packages
 
 export AWS_REGION=`curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | jq .region -r`
-##initial_cloud9_permission
+initial_cloud9_permission
 export EKS_NAMESPACE="kube-system"
 export CROSSPLANE_NAMESPACE="upbound-system"
 export CROSSPLANE_IAM_ROLE="crossplane-controller-role"
 export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text) 
 export VPCID=$(aws cloudformation describe-stacks --region $AWS_REGION --query 'Stacks[].Outputs[?OutputKey == `VPC`].OutputValue' --output text)
  
-##install_k8s_utilities
-##install_postgresql
+install_k8s_utilities
+install_postgresql
 #create_iam_user
-##clone_git
-##chk_cloud9_permission
+clone_git
+chk_cloud9_permission
 export EKS_CLUSTER_NAME=$(aws cloudformation describe-stacks --query "Stacks[].Outputs[?(OutputKey == 'EKSClusterName')][].{OutputValue:OutputValue}" --output text)
 export vpcsg=$(aws ec2 describe-security-groups --filters Name=ip-permission.from-port,Values=5432 Name=ip-permission.to-port,Values=5432 --query "SecurityGroups[0].GroupId" --output text)
 print_environment
-##fix_git
-##update_kubeconfig
-##chk_cloud9_permission
-##update_eks
-##chk_cloud9_permission
+fix_git
+update_kubeconfig
+chk_cloud9_permission
+update_eks
+chk_cloud9_permission
 install_crossplane
 setup_irsa
 install_aws_provider
