@@ -92,7 +92,7 @@ function clone_git()
     print_line
     cd ${HOME}/environment
     rm -rf ack.gitlab ack.codecommit
-    git clone https://github.com/aws-samples/ack-rds-gitops-workshop ack.gitlab
+    git clone https://github.com/ajrajkumar/crossplane-rds-gitops-workshop ack.gitlab
     git clone https://git-codecommit.${AWS_REGION}.amazonaws.com/v1/repos/ack-rds-gitops-workshop ack.codecommit
     cd ack.codecommit
     cp -rp ../ack.gitlab/* .
@@ -232,6 +232,90 @@ function install_c9()
     print_line
 }
 
+function install_aws_provider()
+{
+
+   print_line
+   echo "Installing AWS provider"
+   up controlplane provider install xpkg.upbound.io/upbound/provider-aws:v0.26.0
+   kubectl get providers
+   echo "Installed AWS Providers"
+}
+
+
+function install_crossplane()
+{
+    print_line
+    echo "Installing up"
+    print_line
+    curl -sL "https://cli.upbound.io" | sh > ${TERM} 2>&1
+    sudo mv up /usr/local/bin/
+    /usr/local/bin/up uxp install
+    kubectl get pods -n upbound-system
+    print_line
+}
+
+
+function setup_irsa()
+{
+    print_line
+    echo "Setting up the IRSA for the kubecluster"
+    kubectl create sa ${CROSSPLANE_IAM_ROLE} -n ${CROSSPLANE_NAMESPACE}
+    IRSA_ROLE_ARN="eks.amazonaws.com/role-arn=arn:aws:iam::${AWS_ACCOUNT_ID}:role/${CROSSPLANE_IAM_ROLE}"
+    IRSA_ROLE_ARN_CONFIG="eks.amazonaws.com/role-arn: arn:aws:iam::${AWS_ACCOUNT_ID}:role/${CROSSPLANE_IAM_ROLE}"
+    kubectl annotate serviceaccount -n ${CROSSPLANE_NAMESPACE} ${CROSSPLANE_IAM_ROLE} $IRSA_ROLE_ARN 
+    print_line
+    echo "Creating the controller config"
+    echo "apiVersion: pkg.crossplane.io/v1alpha1
+kind: ControllerConfig
+metadata:
+  name: irsa-controllerconfig
+  annotations:
+    ${IRSA_ROLE_ARN_CONFIG}
+spec: "  | kubectl apply -f -
+
+}
+
+function install_aws_provider()
+{
+
+   print_line
+   echo "Installing AWS provider"
+
+   echo "apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-aws
+spec:
+  package: xpkg.upbound.io/upbound/provider-aws:v0.27.0
+  controllerConfigRef:
+    name: irsa-controllerconfig " | kubectl apply -f -
+   
+  echo "Installing provider config"
+
+  echo "apiVersion: aws.upbound.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: default
+spec:
+  credentials:
+    source: IRSA" | kubectl apply -f -
+
+}
+
+
+function install_crossplane()
+{
+    print_line
+    echo "Installing up"
+    print_line
+    curl -sL "https://cli.upbound.io" | sh > ${TERM} 2>&1
+    sudo mv up /usr/local/bin/
+    /usr/local/bin/up uxp install
+    kubectl get pods -n upbound-system
+    print_line
+}
+
 function chk_cloud9_permission()
 {
     aws sts get-caller-identity | grep ${INSTANCE_ROLE}  
@@ -258,7 +342,7 @@ function initial_cloud9_permission()
     echo "Checking initial cloud9 permission"
     typeset -i counter=0
     managed_role="FALSE"
-    while [ ${counter} -lt 30 ] 
+    while [ ${counter} -lt 2 ] 
     do
         aws sts get-caller-identity | grep ${INSTANCE_ROLE}  
         if [ $? -eq 0 ] ; then
@@ -289,44 +373,12 @@ function print_environment()
     echo "EKS Namespace  : ${EKS_NAMESPACE}"
     echo "EKS Cluster Name : ${EKS_CLUSTER_NAME}"
     echo "VPCID           : ${VPCID}"
-    echo "Subnet A        : ${SUBNETA}"
-    echo "Subnet B        : ${SUBNETB}"
-    echo "Subnet C        : ${SUBNETC}"
     echo "VPC SG           : ${vpcsg}"
     print_line
 }
 
-function create_eks_cluster()
-{
-    typeset -i counter
-    counter=0
-    echo "aws cloudformation  create-stack --stack-name ${EKS_STACK_NAME} --parameters ParameterKey=VPC,ParameterValue=${VPCID} ParameterKey=SubnetAPrivate,ParameterValue=${SUBNETA} ParameterKey=SubnetBPrivate,ParameterValue=${SUBNETB} ParameterKey=SubnetCPrivate,ParameterValue=${SUBNETC} --template-body file://${EKS_CFN_FILE} --capabilities CAPABILITY_IAM"
-    aws cloudformation  create-stack --stack-name ${EKS_STACK_NAME} --parameters ParameterKey=VPC,ParameterValue=${VPCID} ParameterKey=SubnetAPrivate,ParameterValue=${SUBNETA} ParameterKey=SubnetBPrivate,ParameterValue=${SUBNETB} ParameterKey=SubnetCPrivate,ParameterValue=${SUBNETC} --template-body file://${EKS_CFN_FILE} --capabilities CAPABILITY_IAM
-    sleep 60
-    # Checking to make sure the cloudformation completes before continuing
-    while  [ $counter -lt 100 ]
-    do
-        STATUS=`aws cloudformation describe-stacks --stack-name ${EKS_STACK_NAME} --query  Stacks[0].StackStatus`
-	echo ${STATUS} |  grep CREATE_IN_PROGRESS  > /dev/null 
-	if [ $? -eq 0 ] ; then
-	    echo "EKS cluster Stack creation is in progress ${STATUS}... waiting"
-	    sleep 60
-	else
-	    echo "EKS cluster Stack creation status is ${STATUS} breaking the loop"
-	    break
-	fi
-    done
-    echo ${STATUS} |  grep CREATE_COMPLETE  > /dev/null 
-    if [ $? -eq 0 ] ; then
-       echo "EKS cluster Stack creation completed successfully"
-    else
-       echo "EKS cluster Stack creation failed with status ${STATUS}.. exiting"
-       exit 1 
-    fi
-}
-
 # Main program starts here
-exit
+
 export INSTANCE_ROLE="C9Role"
 
 if [ ${1}X == "-xX" ] ; then
@@ -336,33 +388,33 @@ else
 fi
 
 echo "Process started at `date`"
-install_packages
+##install_packages
 
 export AWS_REGION=`curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | jq .region -r`
-initial_cloud9_permission
-export EKS_STACK_NAME="ack-rds-gitops-workshop"
-export EKS_CFN_FILE="${HOME}/environment/ack.codecommit/cfn/ack-rds-cfn-prereq.yaml"
+##initial_cloud9_permission
 export EKS_NAMESPACE="kube-system"
+export CROSSPLANE_NAMESPACE="upbound-system"
+export CROSSPLANE_IAM_ROLE="crossplane-controller-role"
 export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text) 
 export VPCID=$(aws cloudformation describe-stacks --region $AWS_REGION --query 'Stacks[].Outputs[?OutputKey == `VPC`].OutputValue' --output text)
-export SUBNETA=$(aws cloudformation describe-stacks --region $AWS_REGION --query 'Stacks[].Outputs[?OutputKey == `SubnetAPrivate`].OutputValue' --output text)
-export SUBNETB=$(aws cloudformation describe-stacks --region $AWS_REGION --query 'Stacks[].Outputs[?OutputKey == `SubnetBPrivate`].OutputValue' --output text)
-export SUBNETC=$(aws cloudformation describe-stacks --region $AWS_REGION --query 'Stacks[].Outputs[?OutputKey == `SubnetCPrivate`].OutputValue' --output text)
  
-install_k8s_utilities
-install_postgresql
+##install_k8s_utilities
+##install_postgresql
 #create_iam_user
-clone_git
-chk_cloud9_permission
-create_eks_cluster
+##clone_git
+##chk_cloud9_permission
 export EKS_CLUSTER_NAME=$(aws cloudformation describe-stacks --query "Stacks[].Outputs[?(OutputKey == 'EKSClusterName')][].{OutputValue:OutputValue}" --output text)
 export vpcsg=$(aws ec2 describe-security-groups --filters Name=ip-permission.from-port,Values=5432 Name=ip-permission.to-port,Values=5432 --query "SecurityGroups[0].GroupId" --output text)
 print_environment
-fix_git
-update_kubeconfig
-chk_cloud9_permission
-update_eks
-chk_cloud9_permission
+##fix_git
+##update_kubeconfig
+##chk_cloud9_permission
+##update_eks
+##chk_cloud9_permission
+##install_crossplane
+setup_irsa
+install_aws_provider
+exit
 install_loadbalancer
 chk_installation
 chk_cloud9_permission
