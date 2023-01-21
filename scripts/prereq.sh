@@ -304,18 +304,6 @@ spec:
 }
 
 
-function install_crossplane()
-{
-    print_line
-    echo "Installing up"
-    print_line
-    curl -sL "https://cli.upbound.io" | sh > ${TERM} 2>&1
-    sudo mv up /usr/local/bin/
-    /usr/local/bin/up uxp install
-    kubectl get pods -n upbound-system
-    print_line
-}
-
 function chk_cloud9_permission()
 {
     aws sts get-caller-identity | grep ${INSTANCE_ROLE}  
@@ -411,7 +399,7 @@ print_environment
 ##chk_cloud9_permission
 ##update_eks
 ##chk_cloud9_permission
-##install_crossplane
+install_crossplane
 setup_irsa
 install_aws_provider
 exit
