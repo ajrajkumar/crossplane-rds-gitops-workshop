@@ -326,7 +326,7 @@ function create_eks_cluster()
 }
 
 # Main program starts here
-
+exit
 export INSTANCE_ROLE="C9Role"
 
 if [ ${1}X == "-xX" ] ; then
