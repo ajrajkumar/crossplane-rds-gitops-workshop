@@ -289,7 +289,7 @@ kind: Provider
 metadata:
   name: provider-aws
 spec:
-  package: xpkg.upbound.io/upbound/provider-aws:v0.27.0
+  package: xpkg.upbound.io/upbound/provider-aws:v0.29.0
   controllerConfigRef:
     name: irsa-controllerconfig " | kubectl apply -f -
 
