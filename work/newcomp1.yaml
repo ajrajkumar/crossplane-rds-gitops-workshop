@@ -1,0 +1,132 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: rds-postgres.aws.database.example.org
+spec:
+  compositeTypeRef:
+    apiVersion: aws.database.example.org/v1alpha1
+    kind: XCrossplanePg
+  patchSets:
+    - name: common-fields
+      patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.resourceConfig.providerConfigName
+          toFieldPath: spec.providerConfigRef.name
+  resources:
+    - base:
+        apiVersion: rds.aws.upbound.io/v1beta1
+        kind: SubnetGroup
+        spec:
+          forProvider:
+            name: cross-rds-subnet
+            region: us-east-2
+            description: "rds-postgresql"
+            subnetIds:
+            - subnet-02a06e4728f8992c1 
+            - subnet-0648746c2a541c16d 
+            - subnet-0ce694bf1ea28c525
+      patches:
+        - type: PatchSet
+          patchSetName: common-fields
+    - base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: SecurityGroup
+        spec:
+          forProvider:
+            region: us-east-2
+            vpcId: vpc-04678490e72e9e9c4
+            description: "rds-pg-sg"
+            name: comp-rds-sg
+      patches:
+        - type: PatchSet
+          patchSetName: common-fields
+        - fromFieldPath: "metadata.uid"
+          toFieldPath: "spec.forProvider.groupName"
+          transforms:
+            - type: string
+              string:
+                fmt: "rds-mysql-sg-%s"
+    - base:
+        apiVersion: ec2.aws.upbound.io/v1beta1
+        kind: SecurityGroupRule
+        metadata:
+           name: comp-rds-sg-rule1
+        spec:
+         forProvider:
+           cidrBlocks:
+             - "10.40.0.0/16"
+           fromPort: 5432
+           protocol: tcp
+           region: us-east-2
+           securityGroupIdRef:
+             name: comp-rds-sg
+           toPort: 5432
+           type: ingress
+    - base:
+        apiVersion: ec2.aws.upbound.io/v1beta1
+        kind: SecurityGroupRule
+        metadata:
+           name: comp-rds-sg-rule2
+        spec:
+         forProvider:
+           cidrBlocks:
+             - "0.0.0.0/0"
+           fromPort: 0
+           protocol: tcp
+           region: us-east-2
+           securityGroupIdRef:
+             name: comp-rds-sg
+           toPort: 0
+           type: egress
+    - base:
+        apiVersion: rds.aws.upbound.io/v1beta1
+        kind: Instance
+        metadata:
+          annotations:
+            upjet.upbound.io/manual-intervention: This resource has a password secret reference.
+          name: cross-instance
+          namespace: mydb
+        spec:
+          forProvider:
+             dbSubnetGroupNameRef:
+               name: cross-rds-subnet
+             vpcSecurityGroupIdRefs:
+               - name: cross-rds-sg
+             allocatedStorage: to-be-patched
+             autoMinorVersionUpgrade: true
+             backupRetentionPeriod: 14
+             backupWindow: 09:46-10:16
+             engine: postgres
+             engineVersion: "13.7"
+             instanceClass: db.t3.micro
+             maintenanceWindow: Mon:00:00-Mon:03:00
+             passwordSecretRef:
+               key: password
+               name: ack-creds
+               namespace: mydb
+             publiclyAccessible: false
+             region: us-east-2
+             skipFinalSnapshot: true
+             storageEncrypted: false
+             storageType: gp2
+             username: adminer
+             dbName: to-be-patched
+          writeConnectionSecretToRef:
+            name: ack-creds-out-cross
+            namespace: mydb
+      patches:
+        - type: PatchSet
+          patchSetName: common-fields
+        - fromFieldPath: "spec.storageGB"
+          toFieldPath: "spec.forProvider.allocatedStorage"
+        - fromFieldPath: "spec.databaseName"
+          toFieldPath: "spec.forProvider.dbName"
+        - fromFieldPath: metadata.labels[crossplane.io/claim-namespace]
+          toFieldPath: spec.writeConnectionSecretToRef.namespace
+        - fromFieldPath: spec.secret
+          toFieldPath: spec.writeConnectionSecretToRef.name
+        - fromFieldPath: metadata.labels[crossplane.io/claim-namespace]
+          toFieldPath: spec.forProvider.masterUserPasswordSecretRef.namespace
+        - fromFieldPath: spec.secret
+          toFieldPath: spec.forProvider.masterUserPasswordSecretRef.name
+
