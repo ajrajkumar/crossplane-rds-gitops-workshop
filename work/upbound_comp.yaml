@@ -1,0 +1,136 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: rds-postgres.aws.database.example.org
+spec:
+  compositeTypeRef:
+    apiVersion: aws.database.example.org/v1alpha1
+    kind: XCrossplanePg
+  patchSets:
+    - name: common-fields
+      patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.resourceConfig.providerConfigName
+          toFieldPath: spec.providerConfigRef.name
+  resources:
+    - base:
+        apiVersion: rds.aws.upbound.io/v1beta1
+        kind: SubnetGroup
+        spec:
+          providerConfigRef:
+            name: default
+          forProvider:
+            name: cross-rds-subnet
+            region: us-east-2
+            description: "rds-postgresql"
+            subnetIds:
+            - subnet-06f5806b19381cb3e
+            - subnet-03c0ee65d5fba9b97
+            - subnet-0023e1e93fdfc6b5d
+      patches:
+        - type: PatchSet
+          patchSetName: common-fields
+    - base:
+        apiVersion: ec2.aws.upbound.io/v1beta1
+        kind: SecurityGroup
+        spec:
+         providerConfigRef:
+            name: default
+         forProvider:
+            name: comp-rds-sg
+            region: us-east-2
+            vpcId: vpc-021047a27a624d9f5
+            description: "rds-pg-sg"
+      patches:
+        - type: PatchSet
+          patchSetName: common-fields
+        - fromFieldPath: "metadata.uid"
+          toFieldPath: "spec.forProvider.groupName"
+          transforms:
+            - type: string
+              string:
+                fmt: "rds-mysql-sg-%s"
+    - base:
+        apiVersion: ec2.aws.upbound.io/v1beta1
+        kind: SecurityGroupRule
+        metadata:
+           name: comp-rds-sg-rule1
+        spec:
+         providerConfigRef:
+           name: default
+         forProvider:
+           cidrBlocks:
+             - "10.40.0.0/16"
+           fromPort: 5432
+           protocol: tcp
+           region: us-east-2
+           securityGroupIdSelector:
+              matchControllerRef: true
+           toPort: 5432
+           type: ingress
+    - base:
+        apiVersion: ec2.aws.upbound.io/v1beta1
+        kind: SecurityGroupRule
+        metadata:
+           name: comp-rds-sg-rule2
+        spec:
+         forProvider:
+           cidrBlocks:
+             - "0.0.0.0/0"
+           fromPort: 0
+           protocol: tcp
+           region: us-east-2
+           securityGroupIdSelector:
+              matchControllerRef: true
+           toPort: 0
+           type: egress
+    - base:
+        apiVersion: rds.aws.upbound.io/v1beta1
+        kind: Instance
+        metadata:
+          annotations:
+            upjet.upbound.io/manual-intervention: This resource has a password secret reference.
+          name: cross-instance
+          namespace: default
+        spec:
+          providerConfigRef:
+            name: default
+          forProvider:
+             dbSubnetGroupNameSelector:
+                matchControllerRef: true
+             vpcSecurityGroupIdSelector:
+                matchControllerRef: true
+             allocatedStorage: to-be-patched
+             autoMinorVersionUpgrade: true
+             backupRetentionPeriod: 14
+             backupWindow: 09:46-10:16
+             engine: postgres
+             engineVersion: "13.7"
+             instanceClass: db.t3.micro
+             maintenanceWindow: Mon:00:00-Mon:03:00
+             passwordSecretRef:
+               key: password
+               name: ack-creds
+               namespace: default
+             publiclyAccessible: false
+             region: us-east-2
+             skipFinalSnapshot: true
+             storageEncrypted: false
+             storageType: gp2
+             username: adminer
+          writeConnectionSecretToRef:
+            namespace: default
+            name: ack-creds-info-out
+      patches:
+        - type: PatchSet
+          patchSetName: common-fields
+        - fromFieldPath: "spec.storageGB"
+          toFieldPath: "spec.forProvider.allocatedStorage"
+      connectionDetails:
+        - name: username
+          fromFieldPath: spec.forProvider.username
+        - name: password
+          fromConnectionSecretKey: attribute.password
+        - name: endpoint
+          fromFieldPath: status.atProvider.endpoint
+

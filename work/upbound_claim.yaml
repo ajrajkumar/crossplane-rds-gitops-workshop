@@ -7,5 +7,5 @@ spec:
   storageGB: 20
   secret: ack-creds
   resourceConfig:
-    providerConfigName: aws-provider-config
+    providerConfigName: default
 
