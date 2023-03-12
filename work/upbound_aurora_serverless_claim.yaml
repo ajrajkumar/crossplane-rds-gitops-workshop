@@ -1,0 +1,24 @@
+apiVersion: aws.database.example.org/v1alpha1
+kind: CrossplanePG
+metadata:
+  name: crossplane-pg
+spec:
+  databaseName: catalog
+  storageGB: 20
+  secret: ack-creds
+  databaseName:
+  storageGB:
+  secret:
+  subnetIds:
+  region:
+  vpcId:
+  port:
+  cidrBlocks:
+  engineType:
+  engineVersion:
+  instanceClass:
+  passwordSecret:
+  connectionInfoSecret:
+  resourceConfig:
+    providerConfigName: default
+

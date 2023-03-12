@@ -1,0 +1,71 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xcrossplaneaurorapgs.aws.database.example.org
+spec:
+  defaultCompositionRef: 
+    name: aurora-postgres.aws.database.example.org
+  group: aws.database.example.org
+  names:
+    kind: XCrossplaneAuroraPG
+    plural: xcrossplaneaurorapgs
+  claimNames:
+    kind: CrossplaneAuroraPG
+    plural: crossplaneaurorapgs
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          properties:
+            spec:
+              type: object
+              properties:
+                databaseName:
+                  type: string
+                subnetIds: 
+                  type: array
+                  items: 
+                    type: string
+                region:
+                  type: string
+                vpcId: 
+                  type: string
+                cidrBlocks:
+                  type: array
+                  items: 
+                    type: string
+                engine:
+                  type: string
+                engineVersion:
+                  type: string
+                instanceClass:
+                  type: string
+                masterUsername:
+                  type: string
+                masterPasswordSecret:
+                  type: string
+                connectionInfoSecret:
+                  type: string
+                namespace:
+                  type: string
+                resourceConfig:
+                  type: object
+                  description: ResourceConfig defines general properties of this AWS resource.
+                  properties:
+                    providerConfigName:
+                      type: string
+              required:
+                - databaseName
+                - region
+                - vpcId
+                - engine
+                - engineVersion
+                - instanceClass
+                - masterUsername
+                - masterPasswordSecret
+                - connectionInfoSecret
+                - namespace
+                - cidrBlocks
+                - subnetIds

@@ -1,0 +1,16 @@
+apiVersion: rds.aws.upbound.io/v1beta1
+kind: ClusterInstance
+metadata:
+  annotations:
+    upjet.upbound.io/manual-intervention: This resource has a password secret reference.
+  name: aurora-cross-instance
+  namespace: default
+spec:
+  providerConfigRef:
+    name: default
+  forProvider:
+     clusterIdentifierRef:
+       name: crossplane-aurora-pg-hgrjs-2rz9c
+     engine: aurora-postgresql
+     instanceClass: db.t3.micro
+     region: us-east-2

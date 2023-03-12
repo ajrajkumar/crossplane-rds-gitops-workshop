@@ -1,0 +1,29 @@
+apiVersion: rds.aws.upbound.io/v1beta1
+kind: Cluster
+metadata:
+  annotations: 
+    upjet.upbound.io/manual-intervention: This resource has a password secret reference.
+  name: aurora-cross-instance
+  namespace: default
+spec:
+  providerConfigRef:
+    name: default
+  forProvider:
+     dbSubnetGroupName: crossplane-aurora-pg-gjbkt-7t597
+     vpcSecurityGroupIds:
+       - sg-0cb0c1f37b661df93
+     engine: aurora-postgresql
+     engineVersion: "13.7"
+     skipFinalSnapshot: true
+     masterUsername: admin
+     serverlessv2ScalingConfiguration:
+       - maxCapacity: 4
+         minCapacity: 0.5
+     masterPasswordSecretRef:
+       key: password
+       name: db-creds
+       namespace: default
+     region: us-east-2
+  writeConnectionSecretToRef:
+    namespace: default
+    name: db-creds-out

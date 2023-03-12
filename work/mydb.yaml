@@ -1,9 +1,8 @@
 apiVersion: aws.database.example.org/v1alpha1
-kind: CrossplanePG
+kind: CrossplaneAuroraPG
 metadata:
-  name: crossplane-pg
+  name: crossplane-aurora-pg
 spec:
-  storageGB: 20
   databaseName: mydb
   subnetIds:
    - subnet-0089d29b20ed2f304
@@ -11,16 +10,17 @@ spec:
    - subnet-0eca40cf17df43c21
   region: us-east-2
   vpcId: vpc-022259b88c391c9de
-  port: 5432
   cidrBlocks: 
    - "10.40.0.0/16"
-  engine: postgres
+  engine: aurora-postgresql
+  instanceClass: db.serverless
+  serverlessv2ScalingConfiguration:
+   - maxCapacity: 4 
+     minCapacity: 0.5
   engineVersion: "13.7"
-  instanceClass: "db.t3.micro"
-  passwordSecret:  db-creds
+  masterUsername: adminer
+  masterPasswordSecret:  db-creds
   connectionInfoSecret: db-creds-out
   namespace: default
-  storageType: gp2
-  username: adminer
   resourceConfig:
     providerConfigName: default 
