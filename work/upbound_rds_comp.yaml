@@ -1,0 +1,174 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: rds-postgres.aws.database.example.org
+spec:
+  compositeTypeRef:
+    apiVersion: aws.database.example.org/v1alpha1
+    kind: XCrossplanePG
+  patchSets:
+    - name: common-fields
+      patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.resourceConfig.providerConfigName
+          toFieldPath: spec.providerConfigRef.name
+  resources:
+    - base:
+        apiVersion: rds.aws.upbound.io/v1beta1
+        kind: SubnetGroup
+        spec:
+          providerConfigRef:
+            name: to-be-patched
+          forProvider:
+            name: rds-subnet-name
+            region: to-be-patched
+            description: "rds-postgresql"
+            subnetIds: to-be-patched
+      patches:
+        - type: PatchSet
+          patchSetName: common-fields
+        - fromFieldPath: "spec.region"
+          toFieldPath: "spec.forProvider.region"
+        - fromFieldPath: "spec.subnetIds"
+          toFieldPath: "spec.forProvider.subnetIds"
+    - base:
+        apiVersion: ec2.aws.upbound.io/v1beta1
+        kind: SecurityGroup
+        spec:
+         providerConfigRef:
+            name: to-be-patched
+         forProvider:
+            name: rds-sg
+            region: to-be-patched
+            vpcId: to-be-patched
+            description: "rds-pg-sg"
+      patches:
+        - type: PatchSet
+          patchSetName: common-fields
+        - fromFieldPath: "spec.region"
+          toFieldPath: "spec.forProvider.region"
+        - fromFieldPath: "spec.vpcId"
+          toFieldPath: "spec.forProvider.vpcId"
+        - fromFieldPath: "metadata.uid"
+          toFieldPath: "spec.forProvider.groupName"
+          transforms:
+            - type: string
+              string:
+                fmt: "rds-mysql-sg-%s"
+    - base:
+        apiVersion: ec2.aws.upbound.io/v1beta1
+        kind: SecurityGroupRule
+        metadata:
+           name: rds-sg-rule1
+        spec:
+         providerConfigRef:
+           name: to-be-patched
+         forProvider:
+           cidrBlocks: to-be-patched
+           fromPort: to-be-patched
+           protocol: tcp
+           region: to-be-patched
+           securityGroupIdSelector:
+              matchControllerRef: true
+           toPort: to-be-patched
+           type: ingress
+      patches:
+        - type: PatchSet
+          patchSetName: common-fields
+        - fromFieldPath: "spec.region"
+          toFieldPath: "spec.forProvider.region"
+        - fromFieldPath: "spec.fromPort"
+          toFieldPath: "spec.forProvider.port"
+        - fromFieldPath: "spec.toPort"
+          toFieldPath: "spec.forProvider.port"
+        - fromFieldPath: "spec.cidrBlocks"
+          toFieldPath: "spec.forProvider.cidrBlocks"
+    - base:
+        apiVersion: ec2.aws.upbound.io/v1beta1
+        kind: SecurityGroupRule
+        metadata:
+           name: comp-rds-sg-rule2
+        spec:
+         forProvider:
+           cidrBlocks:
+             - "0.0.0.0/0"
+           fromPort: 0
+           protocol: tcp
+           region: to-be-patched
+           securityGroupIdSelector:
+              matchControllerRef: true
+           toPort: 0
+           type: egress
+      patches:
+        - type: PatchSet
+          patchSetName: common-fields
+        - fromFieldPath: "spec.region"
+          toFieldPath: "spec.forProvider.region"
+    - base:
+        apiVersion: rds.aws.upbound.io/v1beta1
+        kind: Instance
+        metadata:
+          annotations:
+            upjet.upbound.io/manual-intervention: This resource has a password secret reference.
+          name: cross-instance
+          namespace: default
+        spec:
+          providerConfigRef:
+            name: to-be-patched
+          forProvider:
+             dbSubnetGroupNameSelector:
+                matchControllerRef: true
+             vpcSecurityGroupIdSelector:
+                matchControllerRef: true
+             allocatedStorage: to-be-patched
+             engine: to-be-patched
+             engineVersion: to-be-patched
+             instanceClass: to-be-patched
+             passwordSecretRef:
+               key: password
+               name: to-be-patched
+               namespace: to-be-patched
+             publiclyAccessible: false
+             region: to-be-patched
+             skipFinalSnapshot: true
+             storageEncrypted: false
+             storageType: to-be-patched
+             username: to-be-patched
+          writeConnectionSecretToRef:
+            namespace: to-be-patched
+            name: to-be-patched
+      patches:
+        - type: PatchSet
+          patchSetName: common-fields
+        - fromFieldPath: "spec.storageGB"
+          toFieldPath: "spec.forProvider.allocatedStorage"
+        - fromFieldPath: "spec.engine"
+          toFieldPath: "spec.forProvider.engine"
+        - fromFieldPath: "spec.engineVersion"
+          toFieldPath: "spec.forProvider.engineVersion"
+        - fromFieldPath: "spec.instanceClass"
+          toFieldPath: "spec.forProvider.instanceClass"
+        - fromFieldPath: "spec.passwordSecret"
+          toFieldPath: "spec.forProvider.passwordSecretRef.name"
+        - fromFieldPath: "spec.namespace"
+          toFieldPath: "spec.forProvider.passwordSecretRef.namespace"
+        - fromFieldPath: "spec.region"
+          toFieldPath: "spec.forProvider.region"
+        - fromFieldPath: "spec.namespace"
+          toFieldPath: "spec.forProvider.namespace"
+        - fromFieldPath: "spec.connectionInfoSecret"
+          toFieldPath: "spec.writeConnectionSecretToRef.name"
+        - fromFieldPath: "spec.namespace"
+          toFieldPath: "spec.writeConnectionSecretToRef.namespace"
+        - fromFieldPath: "spec.storageType"
+          toFieldPath: "spec.forProvider.storageType"
+        - fromFieldPath: "spec.username"
+          toFieldPath: "spec.forProvider.username"
+      connectionDetails:
+        - name: username
+          fromFieldPath: spec.forProvider.username
+        - name: password
+          fromConnectionSecretKey: attribute.password
+        - name: endpoint
+          fromFieldPath: status.atProvider.endpoint
+
