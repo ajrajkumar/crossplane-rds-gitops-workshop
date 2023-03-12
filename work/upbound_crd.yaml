@@ -7,7 +7,7 @@ spec:
     name: rds-postgres.aws.database.example.org
   group: aws.database.example.org
   names:
-    kind: XCrossplanePg
+    kind: XCrossplanePG
     plural: xcrossplanepgs
   claimNames:
     kind: CrossplanePG
@@ -20,22 +20,61 @@ spec:
         openAPIV3Schema:
           properties:
             spec:
+              type: object
               properties:
                 databaseName:
                   type: string
                 storageGB:
                   type: integer
-                secret:
+                storageType:
+                  type: string
+                subnetIds: 
+                  type: array
+                  items: 
+                    type: string
+                region:
+                  type: string
+                vpcId: 
+                  type: string
+                port:
+                  type: number
+                cidrBlocks:
+                  type: array
+                  items: 
+                    type: string
+                engine:
+                  type: string
+                engineVersion:
+                  type: string
+                instanceClass:
+                  type: string
+                username:
+                  type: string
+                passwordSecret:
+                  type: string
+                connectionInfoSecret:
+                  type: string
+                namespace:
                   type: string
                 resourceConfig:
-                  description: ResourceConfig defines general properties of this AWS
-                    resource.
+                  type: object
+                  description: ResourceConfig defines general properties of this AWS resource.
                   properties:
                     providerConfigName:
                       type: string
-                  type: object
               required:
-              - secret
-              - databaseName
-              - storageGB
-              type: object
+                - databaseName
+                - storageGB
+                - storageType
+                - region
+                - vpcId
+                - port
+                - engine
+                - engineVersion
+                - instanceClass
+                - username
+                - passwordSecret
+                - connectionInfoSecret
+                - namespace
+                - cidrBlocks
+                - subnetIds

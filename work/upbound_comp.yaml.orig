@@ -5,7 +5,7 @@ metadata:
 spec:
   compositeTypeRef:
     apiVersion: aws.database.example.org/v1alpha1
-    kind: XCrossplanePG
+    kind: XCrossplanePg
   patchSets:
     - name: common-fields
       patches:
@@ -18,37 +18,32 @@ spec:
         kind: SubnetGroup
         spec:
           providerConfigRef:
-            name: to-be-patched
+            name: default
           forProvider:
-            name: rds-subnet-name
-            region: to-be-patched
+            name: cross-rds-subnet
+            region: us-east-2
             description: "rds-postgresql"
-            subnetIds: to-be-patched
+            subnetIds:
+            - subnet-06f5806b19381cb3e
+            - subnet-03c0ee65d5fba9b97
+            - subnet-0023e1e93fdfc6b5d
       patches:
         - type: PatchSet
           patchSetName: common-fields
-        - fromFieldPath: "spec.region"
-          toFieldPath: "spec.forProvider.region"
-        - fromFieldPath: "spec.subnetIds"
-          toFieldPath: "spec.forProvider.subnetIds"
     - base:
         apiVersion: ec2.aws.upbound.io/v1beta1
         kind: SecurityGroup
         spec:
          providerConfigRef:
-            name: to-be-patched
+            name: default
          forProvider:
-            name: rds-sg
-            region: to-be-patched
-            vpcId: to-be-patched
+            name: comp-rds-sg
+            region: us-east-2
+            vpcId: vpc-021047a27a624d9f5
             description: "rds-pg-sg"
       patches:
         - type: PatchSet
           patchSetName: common-fields
-        - fromFieldPath: "spec.region"
-          toFieldPath: "spec.forProvider.region"
-        - fromFieldPath: "spec.vpcId"
-          toFieldPath: "spec.forProvider.vpcId"
         - fromFieldPath: "metadata.uid"
           toFieldPath: "spec.forProvider.groupName"
           transforms:
@@ -59,30 +54,20 @@ spec:
         apiVersion: ec2.aws.upbound.io/v1beta1
         kind: SecurityGroupRule
         metadata:
-           name: rds-sg-rule1
+           name: comp-rds-sg-rule1
         spec:
          providerConfigRef:
-           name: to-be-patched
+           name: default
          forProvider:
-           cidrBlocks: to-be-patched
-           fromPort: to-be-patched
+           cidrBlocks:
+             - "10.40.0.0/16"
+           fromPort: 5432
            protocol: tcp
-           region: to-be-patched
+           region: us-east-2
            securityGroupIdSelector:
               matchControllerRef: true
-           toPort: to-be-patched
+           toPort: 5432
            type: ingress
-      patches:
-        - type: PatchSet
-          patchSetName: common-fields
-        - fromFieldPath: "spec.region"
-          toFieldPath: "spec.forProvider.region"
-        - fromFieldPath: "spec.fromPort"
-          toFieldPath: "spec.forProvider.port"
-        - fromFieldPath: "spec.toPort"
-          toFieldPath: "spec.forProvider.port"
-        - fromFieldPath: "spec.cidrBlocks"
-          toFieldPath: "spec.forProvider.cidrBlocks"
     - base:
         apiVersion: ec2.aws.upbound.io/v1beta1
         kind: SecurityGroupRule
@@ -94,16 +79,11 @@ spec:
              - "0.0.0.0/0"
            fromPort: 0
            protocol: tcp
-           region: to-be-patched
+           region: us-east-2
            securityGroupIdSelector:
               matchControllerRef: true
            toPort: 0
            type: egress
-      patches:
-        - type: PatchSet
-          patchSetName: common-fields
-        - fromFieldPath: "spec.region"
-          toFieldPath: "spec.forProvider.region"
     - base:
         apiVersion: rds.aws.upbound.io/v1beta1
         kind: Instance
@@ -114,56 +94,38 @@ spec:
           namespace: default
         spec:
           providerConfigRef:
-            name: to-be-patched
+            name: default
           forProvider:
              dbSubnetGroupNameSelector:
                 matchControllerRef: true
              vpcSecurityGroupIdSelector:
                 matchControllerRef: true
              allocatedStorage: to-be-patched
-             engine: to-be-patched
-             engineVersion: to-be-patched
-             instanceClass: to-be-patched
+             autoMinorVersionUpgrade: true
+             backupRetentionPeriod: 14
+             backupWindow: 09:46-10:16
+             engine: postgres
+             engineVersion: "13.7"
+             instanceClass: db.t3.micro
+             maintenanceWindow: Mon:00:00-Mon:03:00
              passwordSecretRef:
                key: password
-               name: to-be-patched
-               namespace: to-be-patched
+               name: ack-creds
+               namespace: default
              publiclyAccessible: false
-             region: to-be-patched
+             region: us-east-2
              skipFinalSnapshot: true
              storageEncrypted: false
-             storageType: to-be-patched
-             username: to-be-patched
+             storageType: gp2
+             username: adminer
           writeConnectionSecretToRef:
-            namespace: to-be-patched
-            name: to-be-patched
+            namespace: default
+            name: ack-creds-info-out
       patches:
         - type: PatchSet
           patchSetName: common-fields
         - fromFieldPath: "spec.storageGB"
           toFieldPath: "spec.forProvider.allocatedStorage"
-        - fromFieldPath: "spec.engine"
-          toFieldPath: "spec.forProvider.engine"
-        - fromFieldPath: "spec.engineVersion"
-          toFieldPath: "spec.forProvider.engineVersion"
-        - fromFieldPath: "spec.instanceClass"
-          toFieldPath: "spec.forProvider.instanceClass"
-        - fromFieldPath: "spec.passwordSecret"
-          toFieldPath: "spec.forProvider.passwordSecretRef.name"
-        - fromFieldPath: "spec.namespace"
-          toFieldPath: "spec.forProvider.passwordSecretRef.namespace"
-        - fromFieldPath: "spec.region"
-          toFieldPath: "spec.forProvider.region"
-        - fromFieldPath: "spec.namespace"
-          toFieldPath: "spec.forProvider.namespace"
-        - fromFieldPath: "spec.connectionInfoSecret"
-          toFieldPath: "spec.writeConnectionSecretToRef.name"
-        - fromFieldPath: "spec.namespace"
-          toFieldPath: "spec.writeConnectionSecretToRef.namespace"
-        - fromFieldPath: "spec.storageType"
-          toFieldPath: "spec.forProvider.storageType"
-        - fromFieldPath: "spec.username"
-          toFieldPath: "spec.forProvider.username"
       connectionDetails:
         - name: username
           fromFieldPath: spec.forProvider.username

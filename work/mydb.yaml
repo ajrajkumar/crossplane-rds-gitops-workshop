@@ -1,0 +1,26 @@
+apiVersion: aws.database.example.org/v1alpha1
+kind: CrossplanePG
+metadata:
+  name: crossplane-pg
+spec:
+  storageGB: 20
+  databaseName: mydb
+  subnetIds:
+   - subnet-0089d29b20ed2f304
+   - subnet-0394f290a15c8ec51
+   - subnet-0eca40cf17df43c21
+  region: us-east-2
+  vpcId: vpc-022259b88c391c9de
+  port: 5432
+  cidrBlocks: 
+   - "10.40.0.0/16"
+  engine: postgres
+  engineVersion: "13.7"
+  instanceClass: "db.t3.micro"
+  passwordSecret:  db-creds
+  connectionInfoSecret: db-creds-out
+  namespace: default
+  storageType: gp2
+  username: adminer
+  resourceConfig:
+    providerConfigName: default 
