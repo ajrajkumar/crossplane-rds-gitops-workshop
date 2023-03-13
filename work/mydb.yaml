@@ -13,14 +13,14 @@ spec:
   cidrBlocks: 
    - "10.40.0.0/16"
   engine: aurora-postgresql
+  port: 5432
   instanceClass: db.serverless
-  serverlessv2ScalingConfiguration:
-   - maxCapacity: 4 
-     minCapacity: 0.5
+  maxCapacity: 4
+  minCapacity: 0.5
   engineVersion: "13.7"
   masterUsername: adminer
   masterPasswordSecret:  db-creds
-  connectionInfoSecret: db-creds-out
+  connectionInfoSecret: db-creds-out-serverless
   namespace: default
   resourceConfig:
     providerConfigName: default 

@@ -1,6 +1,7 @@
+kubectl delete -f mydb.yaml
 kubectl delete -f upbound_aurora_crd.yaml
 kubectl delete -f upbound_aurora_comp.yaml
-kubectl delete -f mydb.yaml
+exit
 sleep 1
 kubectl apply -f upbound_aurora_crd.yaml
 kubectl apply -f upbound_aurora_comp.yaml

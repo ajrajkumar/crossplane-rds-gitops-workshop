@@ -40,12 +40,19 @@ spec:
                   type: string
                 engineVersion:
                   type: string
+                minCapacity:
+                  type: number
                 serverlessv2ScalingConfiguration:
                   type: array
                   items:
                     type: object
-                instanceClass:
-                  type: string
+                    properties:
+                      minCapacity:
+                        type: number
+                      maxCapacity:
+                        type: number
+                maxCapacity:
+                  type: number
                 masterUsername:
                   type: string
                 masterPasswordSecret:
@@ -53,6 +60,10 @@ spec:
                 connectionInfoSecret:
                   type: string
                 namespace:
+                  type: string
+                port:
+                  type: number
+                instanceClass:
                   type: string
                 resourceConfig:
                   type: object
@@ -66,11 +77,13 @@ spec:
                 - vpcId
                 - engine
                 - engineVersion
-                - serverlessv2ScalingConfiguration
-                - instanceClass
+                - port
+                - minCapacity
+                - maxCapacity
                 - masterUsername
                 - masterPasswordSecret
                 - connectionInfoSecret
                 - namespace
                 - cidrBlocks
                 - subnetIds
+                - instanceClass

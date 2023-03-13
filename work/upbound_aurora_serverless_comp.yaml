@@ -77,10 +77,10 @@ spec:
           patchSetName: common-fields
         - fromFieldPath: "spec.region"
           toFieldPath: "spec.forProvider.region"
-        - fromFieldPath: "spec.fromPort"
-          toFieldPath: "spec.forProvider.port"
-        - fromFieldPath: "spec.toPort"
-          toFieldPath: "spec.forProvider.port"
+        - fromFieldPath: "spec.port"
+          toFieldPath: "spec.forProvider.fromPort"
+        - fromFieldPath: "spec.port"
+          toFieldPath: "spec.forProvider.toPort"
         - fromFieldPath: "spec.cidrBlocks"
           toFieldPath: "spec.forProvider.cidrBlocks"
     - base:
@@ -122,9 +122,12 @@ spec:
                 matchControllerRef: true
              engine: to-be-patched
              engineVersion: to-be-patched
+             port: to-be-patched
              skipFinalSnapshot: true
              masterUsername: to-be-patched
-             serverlessv2ScalingConfiguration: to-be-patched
+             serverlessv2ScalingConfiguration: 
+               - minCapacity: to-be-patched
+                 maxCapacity: to-be-patched
              masterPasswordSecretRef:
                key: password
                name: to-be-patched
@@ -138,6 +141,8 @@ spec:
           patchSetName: common-fields
         - fromFieldPath: "spec.engine"
           toFieldPath: "spec.forProvider.engine"
+        - fromFieldPath: "spec.port"
+          toFieldPath: "spec.forProvider.port"
         - fromFieldPath: "spec.engineVersion"
           toFieldPath: "spec.forProvider.engineVersion"
         - fromFieldPath: "spec.masterPasswordSecret"
@@ -146,8 +151,6 @@ spec:
           toFieldPath: "spec.forProvider.masterPasswordSecretRef.namespace"
         - fromFieldPath: "spec.region"
           toFieldPath: "spec.forProvider.region"
-        - fromFieldPath: "spec.serverlessv2ScalingConfiguration"
-          toFieldPath: "spec.forProvider.serverlessv2ScalingConfiguration"
         - fromFieldPath: "spec.namespace"
           toFieldPath: "spec.forProvider.namespace"
         - fromFieldPath: "spec.connectionInfoSecret"
@@ -156,6 +159,10 @@ spec:
           toFieldPath: "spec.writeConnectionSecretToRef.namespace"
         - fromFieldPath: "spec.masterUsername"
           toFieldPath: "spec.forProvider.masterUsername"
+        - fromFieldPath: "spec.minCapacity"
+          toFieldPath: "spec.forProvider.serverlessv2ScalingConfiguration[0].minCapacity"
+        - fromFieldPath: "spec.maxCapacity"
+          toFieldPath: "spec.forProvider.serverlessv2ScalingConfiguration[0].maxCapacity"
       connectionDetails:
         - name: username
           fromFieldPath: spec.forProvider.username

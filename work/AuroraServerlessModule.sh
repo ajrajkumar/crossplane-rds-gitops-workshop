@@ -1,6 +1,6 @@
+kubectl delete -f mydb.yaml
 kubectl delete -f upbound_aurora_serverless_crd.yaml
 kubectl delete -f upbound_aurora_serverless_comp.yaml
-kubectl delete -f mydb.yaml
 sleep 1
 kubectl apply -f upbound_aurora_serverless_crd.yaml
 kubectl apply -f upbound_aurora_serverless_comp.yaml
@@ -10,9 +10,10 @@ EKS_CLUSTER_NAME=eksclu
 AWS_REGION=us-east-2
 ENGINE_VERSION="13.7"
 RDS_DB_SECRET_NAME="db-creds"
-RDS_INFO_SECRET_NAME="db-creds-out"
+RDS_INFO_SECRET_NAME="db-creds-out-serverless"
 MAX_ACU=4
 MIN_ACU=0.5
+PORT=5432
 
 EKS_VPC_ID=$(aws eks describe-cluster --name "${EKS_CLUSTER_NAME}" --query "cluster.resourcesVpcConfig.vpcId" --output text)
 EKS_SUBNET_IDS=$(aws ec2 describe-subnets --filter "Name=vpc-id,Values=${EKS_VPC_ID}" --query 'Subnets[?MapPublicIpOnLaunch==`false`].SubnetId' --output text)
@@ -55,10 +56,10 @@ spec:
   cidrBlocks: 
    - \"${EKS_CIDR_RANGE}\"
   engine: aurora-postgresql
+  port: ${PORT}
   instanceClass: db.serverless
-  serverlessv2ScalingConfiguration:
-   - maxCapacity: ${MAX_ACU} 
-     minCapacity: ${MIN_ACU}
+  maxCapacity: ${MAX_ACU}
+  minCapacity: ${MIN_ACU}
   engineVersion: \"${ENGINE_VERSION}\"
   masterUsername: ${RDS_DB_USERNAME}
   masterPasswordSecret:  ${RDS_DB_SECRET_NAME}
