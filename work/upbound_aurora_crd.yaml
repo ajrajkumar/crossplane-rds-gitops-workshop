@@ -32,6 +32,8 @@ spec:
                   type: string
                 vpcId: 
                   type: string
+                port:
+                  type: number
                 cidrBlocks:
                   type: array
                   items: 

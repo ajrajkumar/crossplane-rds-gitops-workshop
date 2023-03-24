@@ -1,4 +1,4 @@
-kubectl delete -f mydb.yaml
+kubectl delete -f apgserverless.yaml
 kubectl delete -f upbound_aurora_serverless_crd.yaml
 kubectl delete -f upbound_aurora_serverless_comp.yaml
 sleep 1
@@ -42,9 +42,9 @@ data:
 " | kubectl apply -f -
 
 echo "apiVersion: aws.database.example.org/v1alpha1
-kind: CrossplaneAuroraPG
+kind: CrossplaneAPGServerless
 metadata:
-  name: crossplane-aurora-pg
+  name: crossplane-apg-serverless
 spec:
   databaseName: mydb
   subnetIds:
@@ -66,6 +66,6 @@ spec:
   connectionInfoSecret: ${RDS_INFO_SECRET_NAME}
   namespace: ${APP_NAMESPACE}
   resourceConfig:
-    providerConfigName: default " > mydb.yaml
+    providerConfigName: default " > apgserverless.yaml
 
-kubectl apply -f mydb.yaml
+kubectl apply -f apgserverless.yaml

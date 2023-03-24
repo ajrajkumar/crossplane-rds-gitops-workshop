@@ -66,21 +66,21 @@ spec:
          forProvider:
            cidrBlocks: to-be-patched
            fromPort: to-be-patched
+           toPort: to-be-patched
            protocol: tcp
            region: to-be-patched
            securityGroupIdSelector:
               matchControllerRef: true
-           toPort: to-be-patched
            type: ingress
       patches:
         - type: PatchSet
           patchSetName: common-fields
         - fromFieldPath: "spec.region"
           toFieldPath: "spec.forProvider.region"
-        - fromFieldPath: "spec.fromPort"
-          toFieldPath: "spec.forProvider.port"
-        - fromFieldPath: "spec.toPort"
-          toFieldPath: "spec.forProvider.port"
+        - fromFieldPath: spec.port
+          toFieldPath: spec.forProvider.toPort
+        - fromFieldPath: spec.port
+          toFieldPath: spec.forProvider.fromPort
         - fromFieldPath: "spec.cidrBlocks"
           toFieldPath: "spec.forProvider.cidrBlocks"
     - base:

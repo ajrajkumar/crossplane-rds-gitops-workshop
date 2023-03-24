@@ -415,7 +415,6 @@ chk_cloud9_permission
 install_crossplane
 setup_irsa
 install_aws_provider
-exit
 install_loadbalancer
 chk_installation
 chk_cloud9_permission

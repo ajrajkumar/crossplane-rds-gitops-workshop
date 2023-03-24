@@ -10,17 +10,15 @@ spec:
    - subnet-07daafbc7b27d6383
   region: us-east-2
   vpcId: vpc-011214b27e95562dc
+  port: 5432
   cidrBlocks: 
    - "10.40.0.0/16"
   engine: aurora-postgresql
-  port: 5432
-  instanceClass: db.serverless
-  maxCapacity: 4
-  minCapacity: 0.5
   engineVersion: "13.7"
+  instanceClass: "db.t3.large"
   masterUsername: adminer
   masterPasswordSecret:  db-creds
-  connectionInfoSecret: db-creds-out-serverless
+  connectionInfoSecret: db-creds-out-aurora
   namespace: default
   resourceConfig:
     providerConfigName: default 

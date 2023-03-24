@@ -1,17 +1,17 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: CompositeResourceDefinition
 metadata:
-  name: xcrossplaneaurorapgs.aws.database.example.org
+  name: xcrossplaneapgsserverless.aws.database.example.org
 spec:
   defaultCompositionRef: 
-    name: aurora-postgres.aws.database.example.org
+    name: apg-serverless.aws.database.example.org
   group: aws.database.example.org
   names:
-    kind: XCrossplaneAuroraPG
-    plural: xcrossplaneaurorapgs
+    kind: XCrossplaneAPGServerless
+    plural: xcrossplaneapgsserverless
   claimNames:
-    kind: CrossplaneAuroraPG
-    plural: crossplaneaurorapgs
+    kind: CrossplaneAPGServerless
+    plural: crossplaneapgsserverless
   versions:
     - name: v1alpha1
       served: true

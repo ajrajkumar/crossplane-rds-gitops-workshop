@@ -1,7 +1,7 @@
 apiVersion: aws.database.example.org/v1alpha1
-kind: CrossplaneAuroraPG
+kind: CrossplaneAPGServerless
 metadata:
-  name: crossplane-aurora-pg
+  name: crossplane-apg-serverless
 spec:
   databaseName: mydb
   subnetIds:

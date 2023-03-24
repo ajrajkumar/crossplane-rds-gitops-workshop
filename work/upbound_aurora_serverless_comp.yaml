@@ -1,11 +1,11 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: Composition
 metadata:
-  name: aurora-postgres.aws.database.example.org
+  name: apg-serverless.aws.database.example.org
 spec:
   compositeTypeRef:
     apiVersion: aws.database.example.org/v1alpha1
-    kind: XCrossplaneAuroraPG
+    kind: XCrossplaneAPGServerless
   patchSets:
     - name: common-fields
       patches:

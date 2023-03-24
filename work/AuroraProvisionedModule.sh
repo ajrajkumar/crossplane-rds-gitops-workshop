@@ -1,7 +1,6 @@
-kubectl delete -f mydb.yaml
+kubectl delete -f apg.yaml
 kubectl delete -f upbound_aurora_crd.yaml
 kubectl delete -f upbound_aurora_comp.yaml
-exit
 sleep 1
 kubectl apply -f upbound_aurora_crd.yaml
 kubectl apply -f upbound_aurora_comp.yaml
@@ -12,7 +11,7 @@ AWS_REGION=us-east-2
 ENGINE_VERSION="13.7"
 INSTANCE_CLASS="db.t3.large"
 RDS_DB_SECRET_NAME="db-creds"
-RDS_INFO_SECRET_NAME="db-creds-out"
+RDS_INFO_SECRET_NAME="db-creds-out-aurora"
 
 EKS_VPC_ID=$(aws eks describe-cluster --name "${EKS_CLUSTER_NAME}" --query "cluster.resourcesVpcConfig.vpcId" --output text)
 EKS_SUBNET_IDS=$(aws ec2 describe-subnets --filter "Name=vpc-id,Values=${EKS_VPC_ID}" --query 'Subnets[?MapPublicIpOnLaunch==`false`].SubnetId' --output text)
@@ -52,6 +51,7 @@ spec:
    - ${EKS_SUBNET_ID_3}
   region: ${AWS_REGION}
   vpcId: ${EKS_VPC_ID}
+  port: 5432
   cidrBlocks: 
    - \"${EKS_CIDR_RANGE}\"
   engine: aurora-postgresql
@@ -62,6 +62,6 @@ spec:
   connectionInfoSecret: ${RDS_INFO_SECRET_NAME}
   namespace: ${APP_NAMESPACE}
   resourceConfig:
-    providerConfigName: default " > mydb.yaml
+    providerConfigName: default " > apg.yaml
 
-kubectl apply -f mydb.yaml
+kubectl apply -f apg.yaml

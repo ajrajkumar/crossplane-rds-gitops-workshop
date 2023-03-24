@@ -1,13 +1,13 @@
-kubectl delete -f upbound_crd.yaml
-kubectl delete -f upbound_comp.yaml
-kubectl delete -f mydb.yaml
+kubectl delete -f upbound_rds_crd.yaml
+kubectl delete -f upbound_rds_comp.yaml
+kubectl delete -f rds.yaml
 sleep 1
-kubectl apply -f upbound_crd.yaml
-kubectl apply -f upbound_comp.yaml
+kubectl apply -f upbound_rds_crd.yaml
+kubectl apply -f upbound_rds_comp.yaml
 
 APP_NAMESPACE=default
 EKS_CLUSTER_NAME=eksclu
-AWS_REGION=us-east-2
+AWS_REGION=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.region')
 ENGINE_VERSION="13.7"
 INSTANCE_CLASS="db.t3.micro"
 RDS_STORAGE_TYPE="gp2"
@@ -24,11 +24,11 @@ EKS_CIDR_RANGE=$(aws ec2 describe-vpcs --vpc-ids "${EKS_VPC_ID}" --query "Vpcs[]
 RDS_DB_USERNAME=$(aws secretsmanager get-secret-value --secret-id dbCredential  | jq --raw-output '.SecretString' | jq -r .dbuser)
 RDS_DB_PASSWORD=$(aws secretsmanager get-secret-value --secret-id dbCredential  | jq --raw-output '.SecretString' | jq -r .password)
 
-#echo "apiVersion: v1
-#kind: Namespace
-#metadata:
-#  name: ${APP_NAMESPACE}
-#" | kubectl apply -f -
+echo "apiVersion: v1
+kind: Namespace
+metadata:
+  name: ${APP_NAMESPACE}
+" | kubectl apply -f -
 
 echo "apiVersion: v1
 kind: Secret
@@ -66,6 +66,6 @@ spec:
   storageType: ${RDS_STORAGE_TYPE}
   username: ${RDS_DB_USERNAME}
   resourceConfig:
-    providerConfigName: default " > mydb.yaml
+    providerConfigName: default " > rds.yaml
 
-kubectl apply -f mydb.yaml
+kubectl apply -f rds.yaml
