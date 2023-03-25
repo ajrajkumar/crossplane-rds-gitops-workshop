@@ -1,6 +1,7 @@
 #!/usr/bin/sh
 
-PATH=/usr/local/bin:${PATH}
+export PATH=/usr/local/bin:${PATH}
+export AWS_PAGER=""
 
 function wait_loop
 {
@@ -11,8 +12,8 @@ function wait_loop
     typeset -i counter=0
     while [ $counter -lt 10 ]
     do 
-        #output=`${cmd_to_run}`
         output=$(${cmd_to_run})
+		echo "Output of the current operation : ${output}"
         if [ "${output}" == "${status}" ]; then
             echo "Status is ${status} breaking the loop"
             break
@@ -52,7 +53,10 @@ function set_env
 	export SOURCE_DMS_SOURCE_EP="source-source-ep"
 	export STAGE_DMS_SOURCE_EP="stage-source-ep"
     export STAGE_DMS_TARGET_EP="stage-target-ep"
-	export DYN_DMS_EP="dynamodb-target-ep"
+	export DYNAMODB_DMS_TARGET_EP="dynamodb-target-ep"
+
+	export DYNAMODB_DMS_ROLE="dynblog-dms-access-role"
+	export DYNAMODB_DMS_POLICY="dynblog-dms-access-policy"
 
 }
 
@@ -196,7 +200,7 @@ function create_replication_instance
 	--no-publicly-accessible \
 	--no-paginate
 
-	sleep 5 
+	sleep 5
 	export DMS_REP_INSTANCE_ARN=$(aws dms describe-replication-instances --filter "Name=replication-instance-id,Values=${DMS_INSTANCE_NAME}" --query 'ReplicationInstances[0].ReplicationInstanceArn' --output text)
 
 	wait_loop "aws dms describe-replication-instances --filter Name=replication-instance-id,Values=${DMS_INSTANCE_NAME} --query ReplicationInstances[].ReplicationInstanceStatus --output text" "available"
@@ -253,14 +257,101 @@ function create_ep
 
 }
 
+function check_ep
+{
+
+	for ep_arn in ${SOURCE_DMS_SOURCE_EP_ARN} ${STAGE_DMS_SOURCE_EP_ARN} ${STAGE_DMS_TARGET_EP_ARN} ${DYNAMODB_DMS_TARGET_EP_ARN}
+	do
+		echo "Testing the connection for ${ep_arn}"
+		aws dms test-connection --replication-instance-arn ${DMS_REP_INSTANCE_ARN}  --endpoint-arn ${ep_arn}
+	done
+
+	for ep_arn in ${SOURCE_DMS_SOURCE_EP_ARN} ${STAGE_DMS_SOURCE_EP_ARN} ${STAGE_DMS_TARGET_EP_ARN} ${DYNAMODB_DMS_TARGET_EP_ARN} 
+	do
+		echo "Waiting for the connection test for : ${ep_arn}"
+		wait_loop "aws dms describe-connections --filter Name=endpoint-arn,Values=${ep_arn} --query Connections[].Status --output text" "successful"
+		echo "Connection test successfull for ${ep_arn}"
+	done
+
+}
+
 function create_dynamodb_role
 {
 	echo "Creating DynaomoDB role"
+
+	echo "{
+  \"Version\": \"2012-10-17\",
+  \"Statement\": [
+    {
+	  \"Sid\": \"\",
+      \"Effect\": \"Allow\",
+      \"Principal\": {
+        \"Service\": \"dms.amazonaws.com\"
+      },
+      \"Action\": \"sts:AssumeRole\"
+    }
+  ]
+}" > /tmp/dmsDynamoDBAssumeRole.json 
+
+
+aws iam create-role \
+    --role-name ${DYNAMODB_DMS_ROLE} \
+    --assume-role-policy-document file:///tmp/dmsDynamoDBAssumeRole.json
+
+
+	echo "{
+    \"Version\": \"2012-10-17\",
+    \"Statement\": [
+        {
+            \"Action\": [
+                \"dynamodb:*\"
+            ],
+            \"Effect\": \"Allow\",
+            \"Resource\": [ \"*\" ]
+        }
+    ]
+} " > /tmp/dmsDynamoDBAssumeRolePolicyDocument.json
+
+
+	aws iam create-policy \
+    --policy-name ${DYNAMODB_DMS_POLICY} \
+    --policy-document file:///tmp/dmsDynamoDBAssumeRolePolicyDocument.json
+
+	sleep 5
+
+	aws iam attach-role-policy \
+    --role-name ${DYNAMODB_DMS_ROLE} \
+    --policy-arn  arn:aws:iam::${AWS_ACCOUNT_ID}:policy/${DYNAMODB_DMS_POLICY}
+	
+	sleep 5
+
+}
+
+
+function create_gateway_ep
+{
+
+	echo "Creating gateway ep for DynamoDB access"
+
+	aws ec2 create-vpc-endpoint \
+    --vpc-id ${VPCID} \
+    --service-name com.amazonaws.${AWS_REGION}.dynamodb  \
+    --route-table-ids "$(aws ec2 describe-route-tables --filter Name=vpc-id,Values=${VPC_ID} --query RouteTables[].RouteTableId)"
+
 }
 
 function create_dynamodb_ep
 {
 	echo "Creating DynamoDB DMS endpoint"
+
+	aws dms create-endpoint \
+	--endpoint-identifier ${DYNAMODB_DMS_TARGET_EP} \
+	--endpoint-type target \
+	--engine-name dynamodb \
+	--service-access-role-arn arn:aws:iam::${AWS_ACCOUNT_ID}:role/${DYNAMODB_DMS_ROLE}
+
+	sleep 2
+	export DYNAMODB_DMS_TARGET_EP_ARN=$(aws dms describe-endpoints --filter="Name=endpoint-id,Values=${DYNAMODB_DMS_TARGET_EP} " --query="Endpoints[0].EndpointArn" --output text)
 }
 
 if [ "X"${1} == "X" ]; then
@@ -272,16 +363,18 @@ fi
 set_env
 
 if [ "X"${1} == "Xbuild" ] ;  then
-	#create_dbsubnet
-	#create_securitygroup
-	#create_dbparam_group
+	create_dbsubnet
+	create_securitygroup
+	create_dbparam_group
 	create_source_pg
 	create_stage_pg
 	create_dms_replication_role
 	create_replication_instance
 	create_ep
 	create_dynamodb_role
+	create_gateway_ep
 	create_dynamodb_ep
+	check_ep
 fi
 
 if [ "X"${1} == "Xpopulate" ] ;  then
@@ -290,7 +383,4 @@ if [ "X"${1} == "Xpopulate" ] ;  then
 	load_source_table
 	create_source_table
 fi
-
-
-
 
