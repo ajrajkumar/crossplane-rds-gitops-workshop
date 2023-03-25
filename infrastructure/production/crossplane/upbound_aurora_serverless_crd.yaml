@@ -1,0 +1,89 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xcrossplaneapgsserverless.aws.database.example.org
+spec:
+  defaultCompositionRef: 
+    name: apg-serverless.aws.database.example.org
+  group: aws.database.example.org
+  names:
+    kind: XCrossplaneAPGServerless
+    plural: xcrossplaneapgsserverless
+  claimNames:
+    kind: CrossplaneAPGServerless
+    plural: crossplaneapgsserverless
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          properties:
+            spec:
+              type: object
+              properties:
+                databaseName:
+                  type: string
+                subnetIds: 
+                  type: array
+                  items: 
+                    type: string
+                region:
+                  type: string
+                vpcId: 
+                  type: string
+                cidrBlocks:
+                  type: array
+                  items: 
+                    type: string
+                engine:
+                  type: string
+                engineVersion:
+                  type: string
+                minCapacity:
+                  type: number
+                serverlessv2ScalingConfiguration:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      minCapacity:
+                        type: number
+                      maxCapacity:
+                        type: number
+                maxCapacity:
+                  type: number
+                masterUsername:
+                  type: string
+                masterPasswordSecret:
+                  type: string
+                connectionInfoSecret:
+                  type: string
+                namespace:
+                  type: string
+                port:
+                  type: number
+                instanceClass:
+                  type: string
+                resourceConfig:
+                  type: object
+                  description: ResourceConfig defines general properties of this AWS resource.
+                  properties:
+                    providerConfigName:
+                      type: string
+              required:
+                - databaseName
+                - region
+                - vpcId
+                - engine
+                - engineVersion
+                - port
+                - minCapacity
+                - maxCapacity
+                - masterUsername
+                - masterPasswordSecret
+                - connectionInfoSecret
+                - namespace
+                - cidrBlocks
+                - subnetIds
+                - instanceClass

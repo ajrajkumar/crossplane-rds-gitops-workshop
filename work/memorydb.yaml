@@ -1,0 +1,18 @@
+apiVersion: aws.database.example.org/v1alpha1
+kind: CrossplaneMemoryDB
+metadata:
+  name: crossplane-memorydb
+spec:
+  subnetIds:
+   - subnet-069d1f7af36af5805
+   - subnet-0a299a68711fa9bf1
+   - subnet-0390461672822b765
+  region: us-east-2
+  cidrBlocks: 
+   - "10.40.0.0/16"
+  port: 6379
+  instanceClass: db.t4g.small
+  connectionInfoSecret: memorydb-creds-out
+  namespace: default
+  resourceConfig:
+    providerConfigName: default 

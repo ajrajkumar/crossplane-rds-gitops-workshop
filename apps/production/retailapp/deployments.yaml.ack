@@ -32,11 +32,14 @@ spec:
         env:
           - name: DATABASE_HOST
             valueFrom:
-              secretKeyRef:
-                 name: asv2-db-instance-conn
-                 key: endpoint
+              configMapKeyRef:
+                 name: asv2-db-instance-conn-cm
+                 key: retailapp.ack-db-instance01-host
           - name: DATABASE_PORT
-            value: 5432
+            valueFrom:
+              configMapKeyRef:
+                 name: asv2-db-instance-conn-cm
+                 key: retailapp.ack-db-instance01-port
           - name: DATABASE_USER
             valueFrom:
               secretKeyRef:
@@ -122,11 +125,14 @@ spec:
         env:
           - name: DATABASE_HOST
             valueFrom:
-              secretKeyRef:
-                 name: asv2-db-instance-conn
-                 key: endpoint
+              configMapKeyRef:
+                 name: asv2-db-instance-conn-cm
+                 key: retailapp.ack-db-instance01-host
           - name: DATABASE_PORT
-            value: 5432
+            valueFrom:
+              configMapKeyRef:
+                 name: asv2-db-instance-conn-cm
+                 key: retailapp.ack-db-instance01-port
           - name: DATABASE_USER
             valueFrom:
               secretKeyRef:
@@ -212,11 +218,14 @@ spec:
         env:
           - name: DATABASE_HOST
             valueFrom:
-              secretKeyRef:
-                 name: asv2-db-instance-conn
-                 key: endpoint
+              configMapKeyRef:
+                 name: asv2-db-instance-conn-cm
+                 key: retailapp.ack-db-instance01-host
           - name: DATABASE_PORT
-            value: 5432
+            valueFrom:
+              configMapKeyRef:
+                 name: asv2-db-instance-conn-cm
+                 key: retailapp.ack-db-instance01-port
           - name: DATABASE_USER
             valueFrom:
               secretKeyRef:
@@ -302,11 +311,14 @@ spec:
         env:
           - name: DATABASE_HOST
             valueFrom:
-              secretKeyRef:
-                 name: asv2-db-instance-conn
-                 key: endpoint
+              configMapKeyRef:
+                 name: asv2-db-instance-conn-cm
+                 key: retailapp.ack-db-instance01-host
           - name: DATABASE_PORT
-            value: 5432
+            valueFrom:
+              configMapKeyRef:
+                 name: asv2-db-instance-conn-cm
+                 key: retailapp.ack-db-instance01-port
           - name: DATABASE_USER
             valueFrom:
               secretKeyRef:
@@ -412,11 +424,14 @@ spec:
         env:
           - name: DATABASE_HOST
             valueFrom:
-              secretKeyRef:
-                 name: asv2-db-instance-conn
-                 key: endpoint
+              configMapKeyRef:
+                 name: asv2-db-instance-conn-cm
+                 key: retailapp.ack-db-instance01-host
           - name: DATABASE_PORT
-            value: 5432
+            valueFrom:
+              configMapKeyRef:
+                 name: asv2-db-instance-conn-cm
+                 key: retailapp.ack-db-instance01-port
           - name: DATABASE_USER
             valueFrom:
               secretKeyRef:

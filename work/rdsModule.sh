@@ -1,12 +1,12 @@
-kubectl delete -f upbound_rds_crd.yaml
-kubectl delete -f upbound_rds_comp.yaml
-kubectl delete -f rds.yaml
+#kubectl delete -f upbound_rds_crd.yaml
+#kubectl delete -f upbound_rds_comp.yaml
+#kubectl delete -f rds.yaml
 sleep 1
-kubectl apply -f upbound_rds_crd.yaml
-kubectl apply -f upbound_rds_comp.yaml
+#kubectl apply -f upbound_rds_crd.yaml
+#kubectl apply -f upbound_rds_comp.yaml
 
-APP_NAMESPACE=default
-EKS_CLUSTER_NAME=eksclu
+APP_NAMESPACE=mydb
+EKS_CLUSTER_NAME=$(aws cloudformation describe-stacks --query "Stacks[].Outputs[?(OutputKey == 'EKSClusterName')][].{OutputValue:OutputValue}" --output text)
 AWS_REGION=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.region')
 ENGINE_VERSION="13.7"
 INSTANCE_CLASS="db.t3.micro"
@@ -68,4 +68,4 @@ spec:
   resourceConfig:
     providerConfigName: default " > rds.yaml
 
-kubectl apply -f rds.yaml
+#kubectl apply -f rds.yaml
