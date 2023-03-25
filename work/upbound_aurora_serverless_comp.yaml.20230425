@@ -165,15 +165,11 @@ spec:
           toFieldPath: "spec.forProvider.serverlessv2ScalingConfiguration[0].maxCapacity"
       connectionDetails:
         - name: username
-          fromFieldPath: spec.forProvider.masterUsername
+          fromFieldPath: spec.forProvider.username
         - name: password
           fromConnectionSecretKey: attribute.password
-        - name: password1
-          fromConnectionSecretKey: password
         - name: endpoint
           fromFieldPath: status.atProvider.endpoint
-        - name: port 
-          fromFieldPath: spec.forProvider.port
     - base:
         apiVersion: rds.aws.upbound.io/v1beta1
         kind: ClusterInstance
