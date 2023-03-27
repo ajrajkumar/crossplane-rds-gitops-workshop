@@ -1,0 +1,21 @@
+apiVersion: memorydb.aws.upbound.io/v1beta1
+kind: Cluster
+metadata:
+    annotations:
+      upjet.upbound.io/manual-intervention: This resource has a password secret reference.
+    name: memorydb-cross-instance
+    namespace: default
+spec:
+    providerConfigRef:
+      name: default
+    forProvider:
+       aclName: open-access
+       subnetGroupName: crossplane-memorydb-bm5gr-8tzbt
+       region: us-east-2
+       nodeType: db.t4g.small
+    writeConnectionSecretToRef:
+      namespace: default
+      name: memorydbout-ws
+    publishConnectionDetailsTo:
+      name: memorydbout-pub
+

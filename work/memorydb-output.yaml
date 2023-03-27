@@ -1,0 +1,94 @@
+apiVersion: memorydb.aws.upbound.io/v1beta1
+kind: Cluster
+metadata:
+  annotations:
+    crossplane.io/external-create-pending: "2023-03-26T19:53:26Z"
+    crossplane.io/external-create-succeeded: "2023-03-26T19:53:26Z"
+    crossplane.io/external-name: memorydb-cross-instance
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"memorydb.aws.upbound.io/v1beta1","kind":"Cluster","metadata":{"annotations":{"upjet.upbound.io/manual-intervention":"This resource has a password secret reference."},"name":"memorydb-cross-instance"},"spec":{"forProvider":{"aclName":"open-access","nodeType":"db.t4g.small","region":"us-east-2","subnetGroupName":"crossplane-memorydb-bm5gr-8tzbt"},"providerConfigRef":{"name":"default"},"publishConnectionDetailsTo":{"name":"memorydbout-pub"},"writeConnectionSecretToRef":{"name":"memorydbout-ws","namespace":"default"}}}
+    upjet.crossplane.io/provider-meta: '{"e2bfb730-ecaa-11e6-8f88-34363bc7c4c0":{"create":7200000000000,"delete":7200000000000,"update":7200000000000}}'
+    upjet.upbound.io/manual-intervention: This resource has a password secret reference.
+  creationTimestamp: "2023-03-26T19:53:12Z"
+  finalizers:
+  - finalizer.managedresource.crossplane.io
+  generation: 3
+  name: memorydb-cross-instance
+  resourceVersion: "936925"
+  uid: f5f2350f-c2c1-41f7-96af-cf7581e0e5d6
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    aclName: open-access
+    autoMinorVersionUpgrade: true
+    description: Managed by Terraform
+    engineVersion: "6.2"
+    maintenanceWindow: thu:00:30-thu:01:30
+    nodeType: db.t4g.small
+    numReplicasPerShard: 1
+    numShards: 1
+    parameterGroupName: default.memorydb-redis6
+    port: 6379
+    region: us-east-2
+    snapshotWindow: 06:00-07:00
+    subnetGroupName: crossplane-memorydb-bm5gr-8tzbt
+    tags:
+      crossplane-kind: cluster.memorydb.aws.upbound.io
+      crossplane-name: memorydb-cross-instance
+      crossplane-providerconfig: default
+    tlsEnabled: true
+  providerConfigRef:
+    name: default
+  publishConnectionDetailsTo:
+    configRef:
+      name: default
+    name: memorydbout-pub
+  writeConnectionSecretToRef:
+    name: memorydbout-ws
+    namespace: default
+status:
+  atProvider:
+    arn: arn:aws:memorydb:us-east-2:380538141740:cluster/memorydb-cross-instance
+    clusterEndpoint:
+    - address: clustercfg.memorydb-cross-instance.faecnw.memorydb.us-east-2.amazonaws.com
+      port: 6379
+    enginePatchVersion: 6.2.6
+    id: memorydb-cross-instance
+    shards:
+    - name: "0001"
+      nodes:
+      - availabilityZone: us-east-2a
+        createTime: "2023-03-26T20:09:49Z"
+        endpoint:
+        - address: memorydb-cross-instance-0001-001.memorydb-cross-instance.faecnw.memorydb.us-east-2.amazonaws.com
+          port: 6379
+        name: memorydb-cross-instance-0001-001
+      - availabilityZone: us-east-2c
+        createTime: "2023-03-26T20:09:49Z"
+        endpoint:
+        - address: memorydb-cross-instance-0001-002.memorydb-cross-instance.faecnw.memorydb.us-east-2.amazonaws.com
+          port: 6379
+        name: memorydb-cross-instance-0001-002
+      numNodes: 2
+      slots: 0-16383
+    tagsAll:
+      crossplane-kind: cluster.memorydb.aws.upbound.io
+      crossplane-name: memorydb-cross-instance
+      crossplane-providerconfig: default
+  conditions:
+  - lastTransitionTime: "2023-03-26T20:10:19Z"
+    reason: Available
+    status: "True"
+    type: Ready
+  - lastTransitionTime: "2023-03-26T19:53:26Z"
+    reason: ReconcileSuccess
+    status: "True"
+    type: Synced
+  - lastTransitionTime: "2023-03-26T20:09:56Z"
+    reason: Finished
+    status: "True"
+    type: AsyncOperation
+  - lastTransitionTime: "2023-03-26T20:09:56Z"
+    reason: Success
+    status: "True"
+    type: LastAsyncOperation
