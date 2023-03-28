@@ -11,7 +11,7 @@ spec:
       kind: ConfigMap
       metadata:
         namespace: default
-  providerRef:
+  providerConfigRef:
     name: provider-kubernetes
   references:
     - patchesFrom:

@@ -1,0 +1,28 @@
+apiVersion: rds.aws.upbound.io/v1beta1
+kind: Instance 
+metadata:
+  annotations: 
+    upjet.upbound.io/manual-intervention: This resource has a password secret reference.
+  name: pg-cross-instance1
+  namespace: default
+spec:
+  providerConfigRef:
+    name: default
+  forProvider:
+     allocatedStorage: 20
+     dbSubnetGroupName: rds-db-subnet
+     engine: postgres
+     engineVersion: "13.4"
+     instanceClass: "db.t3.micro"
+     passwordSecretRef:
+       key: password
+       name: db-creds
+       namespace: default
+     region: us-east-2
+     skipFinalSnapshot: true
+     storageEncrypted: false
+     storageType: gp2
+     username: adminer
+  writeConnectionSecretToRef:
+    namespace: default
+    name: rds-standalone-creds-out1
