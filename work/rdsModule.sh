@@ -41,6 +41,8 @@ data:
   username: `echo -n ${RDS_DB_USERNAME} | base64`
 " | kubectl apply -f -
 
+exit
+
 echo "apiVersion: aws.database.example.org/v1alpha1
 kind: CrossplanePG
 metadata:

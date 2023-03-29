@@ -5,11 +5,11 @@ metadata:
 spec:
   databaseName: mydb
   subnetIds:
-   - subnet-069d1f7af36af5805
-   - subnet-0a299a68711fa9bf1
-   - subnet-0390461672822b765
+   - subnet-01d3ca48574e195c7
+   - subnet-0da0eab947e2cce05
+   - subnet-01cce3b7adbf16729
   region: us-east-2
-  vpcId: vpc-0394aecf1a99670d0
+  vpcId: vpc-070e193b3df66ecdc
   cidrBlocks: 
    - "10.40.0.0/16"
   engine: aurora-postgresql

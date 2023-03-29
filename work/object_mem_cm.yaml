@@ -1,13 +1,15 @@
 apiVersion: kubernetes.crossplane.io/v1alpha1
 kind: Object
 metadata:
-  name: foobar
+  name: foobar2
 spec:
   forProvider:
     manifest:
       apiVersion: v1
       data:
         endpoint: to-be-patched
+        port: to-be-patched
+        engineVersion: to-be-patched
       kind: ConfigMap
       metadata:
         namespace: default
@@ -21,3 +23,16 @@ spec:
         name: crossplane-memorydb-9j89x-fzxx7
         namespace: default
       toFieldPath: data.endpoint
+    - patchesFrom:
+        apiVersion: memorydb.aws.upbound.io/v1beta1
+        fieldPath: spec.forProvider.port
+        kind: Cluster
+        name: crossplane-memorydb-9j89x-fzxx7
+        namespace: default
+      toFieldPath: "data.port"
+    - patchesFrom:
+        apiVersion: memorydb.aws.upbound.io/v1beta1
+        fieldPath: spec.forProvider.engineVersion
+        kind: Cluster
+        name: crossplane-memorydb-9j89x-fzxx7
+        namespace: default

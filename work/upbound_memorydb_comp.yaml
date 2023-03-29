@@ -132,6 +132,8 @@ spec:
           patchSetName: common-fields
         - fromFieldPath: "spec.port"
           toFieldPath: "spec.forProvider.port"
+        - fromFieldPath: "spec.name"
+          toFieldPath: "metadata.name"
         - fromFieldPath: "spec.namespace"
           toFieldPath: "spec.forProvider.masterPasswordSecretRef.namespace"
         - fromFieldPath: "spec.region"
@@ -154,3 +156,35 @@ spec:
         - name: endpoint
           fromFieldPath: status.atProvider.endpoint
 
+    - base: 
+          apiVersion: kubernetes.crossplane.io/v1alpha1
+          kind: Object
+          metadata:
+            name: to-be-patched
+          spec:
+            forProvider:
+               manifest:
+                  apiVersion: v1
+                  data:
+                     memorydb-cluster-host: to-be-patched
+                  kind: ConfigMap
+                  metadata:
+                    namespace: to-be-patched 
+            providerConfigRef:
+              name: provider-kubernetes
+            references:
+              - patchesFrom:
+                   apiVersion: memorydb.aws.upbound.io/v1beta1
+                   fieldPath: data.memorydb-cluster-host
+                   kind: Cluster
+                   name: memorydb-cross-instance
+                   namespace: to-be-patched
+      patches:
+        - type: PatchSet
+          patchSetName: common-fields
+        - fromFieldPath: "spec.namespace"
+          toFieldPath: "spec.forProvider.manifest.metadata.namespace"
+        - fromFieldPath: "spec.namespace"
+          toFieldPath: "spec.references[0].patchesFrom.namespace"
+        - fromFieldPath: "spec.connectionInfoCM"
+          toFieldPath: "metadata.name"

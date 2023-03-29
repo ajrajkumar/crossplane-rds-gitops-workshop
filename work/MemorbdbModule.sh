@@ -9,6 +9,7 @@ APP_NAMESPACE=default
 EKS_CLUSTER_NAME=eksclu
 AWS_REGION=us-east-2
 RDS_INFO_SECRET_NAME="memorydb-creds-out"
+RDS_INFO_CM_NAME="memorydb-creds-out-cm"
 PORT=6379
 
 EKS_VPC_ID=$(aws eks describe-cluster --name "${EKS_CLUSTER_NAME}" --query "cluster.resourcesVpcConfig.vpcId" --output text)
@@ -40,7 +41,9 @@ spec:
   port: ${PORT}
   instanceClass: db.t4g.small
   connectionInfoSecret: ${RDS_INFO_SECRET_NAME}
+  connectionInfoCM: ${RDS_INFO_CM_NAME}
   namespace: ${APP_NAMESPACE}
+  name: retailapp-memorydb
   resourceConfig:
     providerConfigName: default " > memorydb.yaml
 

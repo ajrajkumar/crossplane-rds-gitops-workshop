@@ -34,11 +34,15 @@ spec:
                     type: string
                 namespace:
                   type: string
+                name:
+                  type: string
                 port:
                   type: number
                 instanceClass:
                   type: string
                 connectionInfoSecret:
+                  type: string
+                connectionInfoCM:
                   type: string
                 resourceConfig:
                   type: object
@@ -50,7 +54,9 @@ spec:
                 - region
                 - port
                 - namespace
+                - name
                 - cidrBlocks
                 - subnetIds
                 - instanceClass
                 - connectionInfoSecret
+                - connectionInfoCM

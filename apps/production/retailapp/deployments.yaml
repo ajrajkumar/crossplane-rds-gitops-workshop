@@ -25,7 +25,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: kart
-        image: <account_id>.dkr.ecr.<region>.amazonaws.com/eksack/kart:1.0
+        image: 635309892211.dkr.ecr.us-east-2.amazonaws.com/eksack/kart:1.0
         imagePullPolicy: Always
         ports:
          - containerPort: 8445
@@ -33,10 +33,10 @@ spec:
           - name: DATABASE_HOST
             valueFrom:
               secretKeyRef:
-                 name: asv2-db-instance-conn
+                 name: db-creds-out-serverless
                  key: endpoint
           - name: DATABASE_PORT
-            value: 5432
+            value: "5432"
           - name: DATABASE_USER
             valueFrom:
               secretKeyRef:
@@ -71,12 +71,12 @@ spec:
             valueFrom:
               configMapKeyRef:
                  name: memorydb-cluster-conn-cm
-                 key: retailapp.memorydb-cluster-host
+                 key: memorydb-cluster-host
           - name: MEMDB_PORT
             valueFrom:
               configMapKeyRef:
                  name: memorydb-cluster-conn-cm
-                 key: retailapp.memorydb-cluster-port
+                 key: memorydb-cluster-port
           - name: MEMDB_USER
             valueFrom:
               secretKeyRef:
@@ -115,7 +115,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: product
-        image: <account_id>.dkr.ecr.<region>.amazonaws.com/eksack/product:1.0
+        image: 635309892211.dkr.ecr.us-east-2.amazonaws.com/eksack/product:1.0
         imagePullPolicy: Always
         ports:
          - containerPort: 8444
@@ -123,10 +123,10 @@ spec:
           - name: DATABASE_HOST
             valueFrom:
               secretKeyRef:
-                 name: asv2-db-instance-conn
+                 name: db-creds-out-serverless
                  key: endpoint
           - name: DATABASE_PORT
-            value: 5432
+            value: "5432"
           - name: DATABASE_USER
             valueFrom:
               secretKeyRef:
@@ -161,12 +161,12 @@ spec:
             valueFrom:
               configMapKeyRef:
                  name: memorydb-cluster-conn-cm
-                 key: retailapp.memorydb-cluster-host
+                 key: memorydb-cluster-host
           - name: MEMDB_PORT
             valueFrom:
               configMapKeyRef:
                  name: memorydb-cluster-conn-cm
-                 key: retailapp.memorydb-cluster-port
+                 key: memorydb-cluster-port
           - name: MEMDB_USER
             valueFrom:
               secretKeyRef:
@@ -205,7 +205,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: user
-        image: <account_id>.dkr.ecr.<region>.amazonaws.com/eksack/user:1.0
+        image: 635309892211.dkr.ecr.us-east-2.amazonaws.com/eksack/user:1.0
         imagePullPolicy: Always
         ports:
          - containerPort: 8446
@@ -213,10 +213,10 @@ spec:
           - name: DATABASE_HOST
             valueFrom:
               secretKeyRef:
-                 name: asv2-db-instance-conn
+                 name: db-creds-out-serverless
                  key: endpoint
           - name: DATABASE_PORT
-            value: 5432
+            value: "5432"
           - name: DATABASE_USER
             valueFrom:
               secretKeyRef:
@@ -251,12 +251,12 @@ spec:
             valueFrom:
               configMapKeyRef:
                  name: memorydb-cluster-conn-cm
-                 key: retailapp.memorydb-cluster-host
+                 key: memorydb-cluster-host
           - name: MEMDB_PORT
             valueFrom:
               configMapKeyRef:
                  name: memorydb-cluster-conn-cm
-                 key: retailapp.memorydb-cluster-port
+                 key: memorydb-cluster-port
           - name: MEMDB_USER
             valueFrom:
               secretKeyRef:
@@ -295,7 +295,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: webapp
-        image: <account_id>.dkr.ecr.<region>.amazonaws.com/eksack/webapp:1.0
+        image: 635309892211.dkr.ecr.us-east-2.amazonaws.com/eksack/webapp:1.0
         imagePullPolicy: Always
         ports:
          - containerPort: 8443
@@ -303,10 +303,10 @@ spec:
           - name: DATABASE_HOST
             valueFrom:
               secretKeyRef:
-                 name: asv2-db-instance-conn
+                 name: db-creds-out-serverless
                  key: endpoint
           - name: DATABASE_PORT
-            value: 5432
+            value: "5432"
           - name: DATABASE_USER
             valueFrom:
               secretKeyRef:
@@ -361,12 +361,12 @@ spec:
             valueFrom:
               configMapKeyRef:
                  name: memorydb-cluster-conn-cm
-                 key: retailapp.memorydb-cluster-host
+                 key: memorydb-cluster-host
           - name: MEMDB_PORT
             valueFrom:
               configMapKeyRef:
                  name: memorydb-cluster-conn-cm
-                 key: retailapp.memorydb-cluster-port
+                 key: memorydb-cluster-port
           - name: MEMDB_USER
             valueFrom:
               secretKeyRef:
@@ -405,7 +405,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: order
-        image: <account_id>.dkr.ecr.<region>.amazonaws.com/eksack/order:1.0
+        image: 635309892211.dkr.ecr.us-east-2.amazonaws.com/eksack/order:1.0
         imagePullPolicy: Always
         ports:
          - containerPort: 8448
@@ -413,10 +413,10 @@ spec:
           - name: DATABASE_HOST
             valueFrom:
               secretKeyRef:
-                 name: asv2-db-instance-conn
+                 name: db-creds-out-serverless
                  key: endpoint
           - name: DATABASE_PORT
-            value: 5432
+            value: "5432"
           - name: DATABASE_USER
             valueFrom:
               secretKeyRef:
@@ -451,12 +451,12 @@ spec:
             valueFrom:
               configMapKeyRef:
                  name: memorydb-cluster-conn-cm
-                 key: retailapp.memorydb-cluster-host
+                 key: memorydb-cluster-host
           - name: MEMDB_PORT
             valueFrom:
               configMapKeyRef:
                  name: memorydb-cluster-conn-cm
-                 key: retailapp.memorydb-cluster-port
+                 key: memorydb-cluster-port
           - name: MEMDB_USER
             valueFrom:
               secretKeyRef:

@@ -4,15 +4,17 @@ metadata:
   name: crossplane-memorydb
 spec:
   subnetIds:
-   - subnet-069d1f7af36af5805
-   - subnet-0a299a68711fa9bf1
-   - subnet-0390461672822b765
+   - subnet-01d3ca48574e195c7
+   - subnet-0da0eab947e2cce05
+   - subnet-01cce3b7adbf16729
   region: us-east-2
   cidrBlocks: 
    - "10.40.0.0/16"
   port: 6379
   instanceClass: db.t4g.small
   connectionInfoSecret: memorydb-creds-out
+  connectionInfoCM: memorydb-creds-out-cm
   namespace: default
+  name: retailapp-memorydb
   resourceConfig:
     providerConfigName: default 

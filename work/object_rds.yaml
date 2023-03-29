@@ -1,0 +1,32 @@
+apiVersion: kubernetes.crossplane.io/v1alpha1
+kind: Object
+metadata:
+  name: foo1
+spec:
+  forProvider:
+    manifest:
+      apiVersion: v1
+      data:
+        endpoint: to-be-patched
+        username: to-be-patched
+      kind: ConfigMap 
+      metadata:
+        namespace: default
+  managementPolicy: ObserveCreateUpdate
+  providerConfigRef:
+    name: provider-k8s
+  references:
+    - patchesFrom:
+        apiVersion: rds.aws.upbound.io/v1beta1
+        fieldPath: status.atProvider.address
+        kind: Instance
+        name: pg-cross-instance1
+        namespace: default
+      toFieldPath: data.endpoint
+    - patchesFrom:
+        apiVersion: rds.aws.upbound.io/v1beta1
+        fieldPath: spec.forProvider.username
+        kind: Instance
+        name: pg-cross-instance1
+        namespace: default
+      toFieldPath: data.username
