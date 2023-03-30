@@ -9,7 +9,7 @@ spec:
    - <apgSubnetId2>
    - <apgSubnetId3>
   region: <region>
-  vpcId: <vpcSecurityGroupIDs>
+  vpcId: <vpcID>
   cidrBlocks: 
    - "<cidrBlock>"
   engine: aurora-postgresql

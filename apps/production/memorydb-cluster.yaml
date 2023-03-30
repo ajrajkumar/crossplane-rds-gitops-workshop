@@ -8,6 +8,7 @@ spec:
    - <memorydbSubnetId1>
    - <memorydbSubnetId1>
   region: <region>
+  vpcId: <vpcID>
   cidrBlocks: 
    -  "<cidrBlock>"
   port: 6379
