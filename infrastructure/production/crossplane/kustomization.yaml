@@ -5,4 +5,4 @@ resources:
   - namespace.yaml
   - crossplane-serviceaccount.yaml
   - aurora-crd-composition.yaml
-#  - memorydb-crd-compsition.yaml
+  - memorydb-crd-compsition.yaml

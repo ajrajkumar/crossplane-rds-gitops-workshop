@@ -5,9 +5,9 @@ metadata:
 spec:
   databaseName: mydb
   subnetIds:
-   - <dbSubnetId1>
-   - <dbSubnetId2>
-   - <dbSubnetId3>
+   - <apgSubnetId1>
+   - <apgSubnetId2>
+   - <apgSubnetId3>
   region: <region>
   vpcId: <vpcSecurityGroupIDs>
   cidrBlocks: 
@@ -23,4 +23,4 @@ spec:
   connectionInfoSecret: asv2-db-instance-conn
   namespace: retailapp
   resourceConfig:
-    providerConfigName: default 
+    providerConfigName: provider-aws

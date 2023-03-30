@@ -25,7 +25,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: kart
-        image: 635309892211.dkr.ecr.us-east-2.amazonaws.com/eksack/kart:1.0
+        image: <account_id>.dkr.ecr.<region>.amazonaws.com/eksack/kart:1.0
         imagePullPolicy: Always
         ports:
          - containerPort: 8445
@@ -33,7 +33,7 @@ spec:
           - name: DATABASE_HOST
             valueFrom:
               secretKeyRef:
-                 name: db-creds-out-serverless
+                 name: asv2-db-instance-conn
                  key: endpoint
           - name: DATABASE_PORT
             value: "5432"
@@ -115,7 +115,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: product
-        image: 635309892211.dkr.ecr.us-east-2.amazonaws.com/eksack/product:1.0
+        image: <account_id>.dkr.ecr.<region>.amazonaws.com/eksack/product:1.0
         imagePullPolicy: Always
         ports:
          - containerPort: 8444
@@ -123,7 +123,7 @@ spec:
           - name: DATABASE_HOST
             valueFrom:
               secretKeyRef:
-                 name: db-creds-out-serverless
+                 name: asv2-db-instance-conn
                  key: endpoint
           - name: DATABASE_PORT
             value: "5432"
@@ -205,7 +205,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: user
-        image: 635309892211.dkr.ecr.us-east-2.amazonaws.com/eksack/user:1.0
+        image: <account_id>.dkr.ecr.<region>.amazonaws.com/eksack/user:1.0
         imagePullPolicy: Always
         ports:
          - containerPort: 8446
@@ -213,7 +213,7 @@ spec:
           - name: DATABASE_HOST
             valueFrom:
               secretKeyRef:
-                 name: db-creds-out-serverless
+                 name: asv2-db-instance-conn
                  key: endpoint
           - name: DATABASE_PORT
             value: "5432"
@@ -295,7 +295,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: webapp
-        image: 635309892211.dkr.ecr.us-east-2.amazonaws.com/eksack/webapp:1.0
+        image: <account_id>.dkr.ecr.<region>.amazonaws.com/eksack/webapp:1.0
         imagePullPolicy: Always
         ports:
          - containerPort: 8443
@@ -303,7 +303,7 @@ spec:
           - name: DATABASE_HOST
             valueFrom:
               secretKeyRef:
-                 name: db-creds-out-serverless
+                 name: asv2-db-instance-conn
                  key: endpoint
           - name: DATABASE_PORT
             value: "5432"
@@ -405,7 +405,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: order
-        image: 635309892211.dkr.ecr.us-east-2.amazonaws.com/eksack/order:1.0
+        image: <account_id>.dkr.ecr.<region>.amazonaws.com/eksack/order:1.0
         imagePullPolicy: Always
         ports:
          - containerPort: 8448
@@ -413,7 +413,7 @@ spec:
           - name: DATABASE_HOST
             valueFrom:
               secretKeyRef:
-                 name: db-creds-out-serverless
+                 name: asv2-db-instance-conn
                  key: endpoint
           - name: DATABASE_PORT
             value: "5432"
