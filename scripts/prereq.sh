@@ -129,6 +129,8 @@ function fix_git()
 	-e "s/<memorydbSubnetId2>/$MEMDB_SUBNET_ID_2/g" \
 	-e "s/<memorydbSubnetId3>/$MEMDB_SUBNET_ID_3/g" \
 	-e "s/<userName>/$RDS_DB_USERNAME/g" \
+	-e "s/<dbUserName>/$RDS_DB_USERNAME/g" \
+	-e "s/<dbPassword>/$RDS_DB_PASSWORD/g" \
    	./apps/production/*.yaml
 
     git add .
@@ -326,7 +328,7 @@ function install_k8s_provider()
 {
 
     print_line
-    echo "Iinstalling Kuberntes provider"
+    echo "Installing Kuberntes provider"
 
     echo "apiVersion: pkg.crossplane.io/v1
 kind: Provider
@@ -363,7 +365,7 @@ spec:
 
     echo "Granting the required role to kubernetes provider"
 
-    SA=$(kubectl -n ${CROSSPLANE_NAMESPACE} sa -o name | grep provider-kubernetes | sed -e 's|serviceaccount\/|${CROSSPLANE_NAMESPACE}:|g')
+    SA=$(kubectl get sa -n ${CROSSPLANE_NAMESPACE} -o name | grep provider-kubernetes | sed -e "s|serviceaccount\/|${CROSSPLANE_NAMESPACE}:|g")
     echo "SA Role is ${SA}"
     kubectl create clusterrolebinding provider-kubernetes-admin-binding --clusterrole cluster-admin --serviceaccount="${SA}"
 
@@ -477,6 +479,7 @@ export VPCSG=$(aws ec2 describe-security-groups --filters Name=ip-permission.fro
 create_secret
 export RDS_DB_USERNAME=$(aws secretsmanager get-secret-value --secret-id dbCredential  | jq --raw-output '.SecretString' | jq -r .dbuser)
 export RDS_DB_PASSWORD=$(aws secretsmanager get-secret-value --secret-id dbCredential  | jq --raw-output '.SecretString' | jq -r .password)
+export DB_CREDS="db-creds"
 print_environment
 fix_git
 update_kubeconfig
