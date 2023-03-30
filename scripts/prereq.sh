@@ -91,11 +91,11 @@ function clone_git()
     echo "Cloning the git repository"
     print_line
     cd ${HOME}/environment
-    rm -rf ack.gitlab ack.codecommit
-    git clone https://github.com/ajrajkumar/crossplane-rds-gitops-workshop ack.gitlab
-    git clone https://git-codecommit.${AWS_REGION}.amazonaws.com/v1/repos/crossplane-rds-gitops-workshop ack.codecommit
-    cd ack.codecommit
-    cp -rp ../ack.gitlab/* .
+    rm -rf crossplane.gitlab crossplane.codecommit
+    git clone https://github.com/ajrajkumar/crossplane-rds-gitops-workshop crossplane.gitlab
+    git clone https://git-codecommit.${AWS_REGION}.amazonaws.com/v1/repos/crossplane-rds-gitops-workshop crossplane.codecommit
+    cd crossplane.codecommit
+    cp -rp ../crossplane.gitlab/* .
     print_line
 }
 
@@ -105,25 +105,30 @@ function fix_git()
     echo "Fixing the git repository"
     print_line
 
-    cd ${HOME}/environment/ack.codecommit
+    cd ${HOME}/environment/crossplane.codecommit
 
     # Update infrastructure manifests
-    sed -i -e "s/<region>/$AWS_REGION/g" ./infrastructure/production/ack/*release*.yaml
-    sed -i -e "s/<account_id>/$AWS_ACCOUNT_ID/g" ./infrastructure/production/ack/*serviceaccount.yaml
+    #sed -i -e "s/<region>/$AWS_REGION/g" ./infrastructure/production/crossplane/*release*.yaml
+    sed -i -e "s/<account_id>/$AWS_ACCOUNT_ID/g" ./infrastructure/production/crossplane/*serviceaccount.yaml
 
     # Update application manifests
     sed -i -e "s/<region>/$AWS_REGION/g" \
          -e "s/<account_id>/$AWS_ACCOUNT_ID/g" \
-         -e "s/<dbSubnetGroupName>/rds-db-subnet/g" \
-         -e "s/<MemdbSubnetGroupName>/memorydb-db-subnet/g" \
          -e "s/<vpcSecurityGroupIDs>/$VPCID/g" \
        ./apps/production/retailapp/*.yaml
 
     sed -i -e "s/<region>/$AWS_REGION/g" \
    	-e "s/<account_id>/$AWS_ACCOUNT_ID/g" \
-   	-e "s/<dbSubnetGroupName>/rds-db-subnet/g" \
-   	-e "s/<MemdbSubnetGroupName>/memorydb-db-subnet/g" \
-   	-e "s/<vpcSecurityGroupIDs>/$vpcsg/g" \
+   	-e "s/<apgSubnetId1>/$SUBNET_ID_1/g" \
+   	-e "s/<apgSubnetId2>/$SUBNET_ID_2/g" \
+   	-e "s/<apgSubnetId3>/$SUBNET_ID_3/g" \
+   	-e "s/<vpcSecurityGroupIDs>/$VPCSG/g" \
+   	-e "s/<cidrBlock>/$CIDR_BLOCK/g" \
+	-e "s/<db-creds>/$DB_CREDS/g" \
+	-e "s/<memorydbSubnetId1>/$MEMDB_SUBNET_ID_1/g" \
+	-e "s/<memorydbSubnetId2>/$MEMDB_SUBNET_ID_2/g" \
+	-e "s/<memorydbSubnetId3>/$MEMDB_SUBNET_ID_3/g" \
+	-e "s/<userName>/$RDS_DB_USERNAME/g" \
    	./apps/production/*.yaml
 
     git add .
@@ -211,15 +216,15 @@ function build_and_publish_container_images()
 {
     print_line
     echo "Create docker container images for application and publish to ECR"
-    cd ~/environment/ack.codecommit/apps/src
+    cd ~/environment/crossplane.codecommit/apps/src
     export TERM=xterm
     make
     cd -
     print_line
-}
+} 
 
 function create_secret()
-{
+{ 
     print_line
     aws secretsmanager create-secret     --name dbCredential     --description "RDS DB username/password"     --secret-string "{\"dbuser\":\"adminer\",\"password\":\"postgres\"}" 
     print_line
@@ -247,7 +252,7 @@ function install_crossplane()
     while [ $counter -lt 10 ]
     do
         pods=`kubectl get pods -n ${CROSSPLANE_NAMESPACE} | grep Running | wc -l`
-	if [ ${pods} -ge 4 ]; then
+	if [ ${pods} -ge 3 ]; then
             echo "Crossplane pods started successfully"
             break
 	fi
@@ -310,15 +315,64 @@ spec:
   echo "apiVersion: aws.upbound.io/v1beta1
 kind: ProviderConfig
 metadata:
-  name: default
+  name: provider-aws
 spec:
   credentials:
     source: IRSA" | kubectl apply -f -
 }
 
 
+function install_k8s_provider()
+{
+
+    print_line
+    echo "Iinstalling Kuberntes provider"
+
+    echo "apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+   name: provider-kubernetes
+spec:
+   package: xpkg.upbound.io/crossplane-contrib/provider-kubernetes:v0.7.0
+   controllerConfigRef:
+      name: irsa-controllerconfig"  | kubectl apply -f -
+
+    echo "Waiting for the provider to be available"
+    typeset -i counter=0
+    while [ $counter -lt 30 ]
+    do
+        pods=`kubectl get pods -n ${CROSSPLANE_NAMESPACE} | grep provider-kubernetes | grep Running | wc -l`
+	if [ ${pods} -eq 1 ]; then
+            echo "Crossplane Kubernetes provider started successfully"
+            break
+	fi
+	sleep 10
+	counter=$counter+1
+    done
+
+
+    echo "Installing Kubernetes provider config"
+
+    echo "apiVersion: kubernetes.crossplane.io/v1alpha1
+kind: ProviderConfig
+metadata:
+  name: provider-kubernetes
+spec:
+  credentials:
+    source: InjectedIdentity " | kubectl apply -f - 
+
+    echo "Granting the required role to kubernetes provider"
+
+    SA=$(kubectl -n ${CROSSPLANE_NAMESPACE} sa -o name | grep provider-kubernetes | sed -e 's|serviceaccount\/|${CROSSPLANE_NAMESPACE}:|g')
+    echo "SA Role is ${SA}"
+    kubectl create clusterrolebinding provider-kubernetes-admin-binding --clusterrole cluster-admin --serviceaccount="${SA}"
+
+}
+
+
 function chk_cloud9_permission()
 {
+    return #raj
     aws sts get-caller-identity | grep ${INSTANCE_ROLE}  
     if [ $? -ne 0 ] ; then
 	echo "Fixing the cloud9 permission"
@@ -339,6 +393,7 @@ function chk_cloud9_permission()
 
 function initial_cloud9_permission()
 {
+    return #raj
     print_line
     echo "Checking initial cloud9 permission"
     typeset -i counter=0
@@ -374,7 +429,7 @@ function print_environment()
     echo "EKS Namespace  : ${EKS_NAMESPACE}"
     echo "EKS Cluster Name : ${EKS_CLUSTER_NAME}"
     echo "VPCID           : ${VPCID}"
-    echo "VPC SG           : ${vpcsg}"
+    echo "VPC SG           : ${VPCSG}"
     print_line
 }
 
@@ -390,6 +445,8 @@ fi
 
 echo "Process started at `date`"
 install_packages
+install_k8s_utilities
+install_postgresql
 
 export AWS_REGION=`curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | jq .region -r`
 initial_cloud9_permission
@@ -398,14 +455,28 @@ export CROSSPLANE_NAMESPACE="upbound-system"
 export CROSSPLANE_IAM_ROLE="crossplane-controller-role"
 export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text) 
 export VPCID=$(aws cloudformation describe-stacks --region $AWS_REGION --query 'Stacks[].Outputs[?OutputKey == `VPC`].OutputValue' --output text)
+
+
+export EKS_VPC_ID=$(aws eks describe-cluster --name "${EKS_CLUSTER_NAME}" --query "cluster.resourcesVpcConfig.vpcId" --output text)
+export SUBNET_IDS=$(aws ec2 describe-subnets --filter "Name=vpc-id,Values=${EKS_VPC_ID}" --query 'Subnets[?MapPublicIpOnLaunch==`false`].SubnetId' --output text)
+export SUBNET_ID_1=`echo ${SUBNET_IDS} | awk '{print $1}'`
+export SUBNET_ID_2=`echo ${SUBNET_IDS} | awk '{print $2}'`
+export SUBNET_ID_3=`echo ${SUBNET_IDS} | awk '{print $3}'`
+export CIDR_BLOCK=$(aws ec2 describe-vpcs --vpc-ids "${EKS_VPC_ID}" --query "Vpcs[].CidrBlock" --output text)
+
+export MEMDB_SUBNET_IDS=$(aws cloudformation describe-stacks --region ${AWS_REGION} --query 'Stacks[].Outputs[?OutputKey == `MemoryDBAllowedSubnets`].OutputValue' --output text)
+export MEMDB_SUBNET_ID_1=`echo ${MEMDB_SUBNET_IDS} | awk -F',' '{print $1}'`
+export MEMDB_SUBNET_ID_2=`echo ${MEMDB_SUBNET_IDS} | awk -F',' '{print $2}'`
+export MEMDB_SUBNET_ID_3=`echo ${MEMDB_SUBNET_IDS} | awk -F',' '{print $3}'`
  
-install_k8s_utilities
-install_postgresql
 #create_iam_user
 clone_git
 chk_cloud9_permission
 export EKS_CLUSTER_NAME=$(aws cloudformation describe-stacks --query "Stacks[].Outputs[?(OutputKey == 'EKSClusterName')][].{OutputValue:OutputValue}" --output text)
-export vpcsg=$(aws ec2 describe-security-groups --filters Name=ip-permission.from-port,Values=5432 Name=ip-permission.to-port,Values=5432 --query "SecurityGroups[0].GroupId" --output text)
+export VPCSG=$(aws ec2 describe-security-groups --filters Name=ip-permission.from-port,Values=5432 Name=ip-permission.to-port,Values=5432 --query "SecurityGroups[0].GroupId" --output text)
+create_secret
+export RDS_DB_USERNAME=$(aws secretsmanager get-secret-value --secret-id dbCredential  | jq --raw-output '.SecretString' | jq -r .dbuser)
+export RDS_DB_PASSWORD=$(aws secretsmanager get-secret-value --secret-id dbCredential  | jq --raw-output '.SecretString' | jq -r .password)
 print_environment
 fix_git
 update_kubeconfig
@@ -415,13 +486,13 @@ chk_cloud9_permission
 install_crossplane
 setup_irsa
 install_aws_provider
+install_k8s_provider
 install_loadbalancer
 chk_installation
 chk_cloud9_permission
 run_kubectl
 chk_cloud9_permission
 build_and_publish_container_images
-create_secret
 print_line
 install_c9
 print_line

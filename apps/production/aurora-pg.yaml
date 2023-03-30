@@ -18,7 +18,7 @@ spec:
   maxCapacity: 4
   minCapacity: 0.5
   engineVersion: "13.7"
-  masterUsername: adminer
+  masterUsername: <userName>
   masterPasswordSecret:  <db-creds>
   connectionInfoSecret: asv2-db-instance-conn
   namespace: retailapp
