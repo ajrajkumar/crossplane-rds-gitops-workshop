@@ -2,6 +2,7 @@ apiVersion: aws.database.example.org/v1alpha1
 kind: CrossplaneAPGServerless
 metadata:
   name: crossplane-apg-serverless
+  namespace: retailapp
 spec:
   databaseName: mydb
   subnetIds:

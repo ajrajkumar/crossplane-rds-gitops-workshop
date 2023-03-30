@@ -126,7 +126,7 @@ function fix_git()
    	-e "s/<apgSubnetId1>/$SUBNET_ID_1/g" \
    	-e "s/<apgSubnetId2>/$SUBNET_ID_2/g" \
    	-e "s/<apgSubnetId3>/$SUBNET_ID_3/g" \
-   	-e "s/<vpcSecurityGroupIDs>/$VPCSG/g" \
+   	-e "s/<vpcIDs>/$VPCID/g" \
    	-e "s/<cidrBlock>/$CIDR_BLOCK/g" \
 	-e "s/<db-creds>/$DB_CREDS/g" \
 	-e "s/<memorydbSubnetId1>/$MEMDB_SUBNET_ID_1/g" \

@@ -2,6 +2,7 @@ apiVersion: aws.database.example.org/v1alpha1
 kind: CrossplaneMemoryDB
 metadata:
   name: retailapp-memorydb
+  namespace: retailapp
 spec:
   subnetIds:
    - <memorydbSubnetId1>
