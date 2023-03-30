@@ -48,7 +48,7 @@ function install_k8s_utilities()
 function install_postgresql()
 {
     print_line
-    echo "Installing Postgresql client"
+    echo "Installing PostgreSQL client"
     print_line
     sudo amazon-linux-extras install -y postgresql14 > ${TERM} 2>&1
 }
@@ -109,13 +109,17 @@ function fix_git()
 
     # Update infrastructure manifests
     #sed -i -e "s/<region>/$AWS_REGION/g" ./infrastructure/production/crossplane/*release*.yaml
+    echo "Changing the manifest files"
     sed -i -e "s/<account_id>/$AWS_ACCOUNT_ID/g" ./infrastructure/production/crossplane/*serviceaccount.yaml
 
     # Update application manifests
+    echo "Changing the application manifest files"
     sed -i -e "s/<region>/$AWS_REGION/g" \
          -e "s/<account_id>/$AWS_ACCOUNT_ID/g" \
          -e "s/<vpcSecurityGroupIDs>/$VPCID/g" \
        ./apps/production/retailapp/*.yaml
+
+    echo "Changing the instance manifest files"
 
     sed -i -e "s/<region>/$AWS_REGION/g" \
    	-e "s/<account_id>/$AWS_ACCOUNT_ID/g" \
@@ -129,8 +133,10 @@ function fix_git()
 	-e "s/<memorydbSubnetId2>/$MEMDB_SUBNET_ID_2/g" \
 	-e "s/<memorydbSubnetId3>/$MEMDB_SUBNET_ID_3/g" \
 	-e "s/<userName>/$RDS_DB_USERNAME/g" \
-	-e "s/<dbUserName>/$RDS_DB_USERNAME/g" \
+	-e "s/<dbUsername>/$RDS_DB_USERNAME/g" \
 	-e "s/<dbPassword>/$RDS_DB_PASSWORD/g" \
+	-e "s/<dbUsername64>/$RDS_DB_USERNAME64/g" \
+	-e "s/<dbPassword64>/$RDS_DB_PASSWORD64/g" \
    	./apps/production/*.yaml
 
     git add .
@@ -458,13 +464,20 @@ export CROSSPLANE_IAM_ROLE="crossplane-controller-role"
 export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text) 
 export VPCID=$(aws cloudformation describe-stacks --region $AWS_REGION --query 'Stacks[].Outputs[?OutputKey == `VPC`].OutputValue' --output text)
 
+export EKS_CLUSTER_NAME=$(aws cloudformation describe-stacks --query "Stacks[].Outputs[?(OutputKey == 'EKSClusterName')][].{OutputValue:OutputValue}" --output text)
+export VPCSG=$(aws ec2 describe-security-groups --filters Name=ip-permission.from-port,Values=5432 Name=ip-permission.to-port,Values=5432 --query "SecurityGroups[0].GroupId" --output text)
 
 export EKS_VPC_ID=$(aws eks describe-cluster --name "${EKS_CLUSTER_NAME}" --query "cluster.resourcesVpcConfig.vpcId" --output text)
 export SUBNET_IDS=$(aws ec2 describe-subnets --filter "Name=vpc-id,Values=${EKS_VPC_ID}" --query 'Subnets[?MapPublicIpOnLaunch==`false`].SubnetId' --output text)
 export SUBNET_ID_1=`echo ${SUBNET_IDS} | awk '{print $1}'`
 export SUBNET_ID_2=`echo ${SUBNET_IDS} | awk '{print $2}'`
 export SUBNET_ID_3=`echo ${SUBNET_IDS} | awk '{print $3}'`
-export CIDR_BLOCK=$(aws ec2 describe-vpcs --vpc-ids "${EKS_VPC_ID}" --query "Vpcs[].CidrBlock" --output text)
+export CIDR_BLOCK1=$(aws ec2 describe-vpcs --vpc-ids "${EKS_VPC_ID}" --query "Vpcs[].CidrBlock" --output text)
+echo "Block is  ${CIDR_BLOCK1}"
+export CIDR_BLOCK=`echo ${CIDR_BLOCK1} | sed -e "s|\/|\\\\\/|g"`
+echo "Block is  ${CIDR_BLOCK}"
+
+echo "EKS_VPC_ID : ${EKS_VPC_ID}"
 
 export MEMDB_SUBNET_IDS=$(aws cloudformation describe-stacks --region ${AWS_REGION} --query 'Stacks[].Outputs[?OutputKey == `MemoryDBAllowedSubnets`].OutputValue' --output text)
 export MEMDB_SUBNET_ID_1=`echo ${MEMDB_SUBNET_IDS} | awk -F',' '{print $1}'`
@@ -474,11 +487,11 @@ export MEMDB_SUBNET_ID_3=`echo ${MEMDB_SUBNET_IDS} | awk -F',' '{print $3}'`
 #create_iam_user
 clone_git
 chk_cloud9_permission
-export EKS_CLUSTER_NAME=$(aws cloudformation describe-stacks --query "Stacks[].Outputs[?(OutputKey == 'EKSClusterName')][].{OutputValue:OutputValue}" --output text)
-export VPCSG=$(aws ec2 describe-security-groups --filters Name=ip-permission.from-port,Values=5432 Name=ip-permission.to-port,Values=5432 --query "SecurityGroups[0].GroupId" --output text)
 create_secret
 export RDS_DB_USERNAME=$(aws secretsmanager get-secret-value --secret-id dbCredential  | jq --raw-output '.SecretString' | jq -r .dbuser)
 export RDS_DB_PASSWORD=$(aws secretsmanager get-secret-value --secret-id dbCredential  | jq --raw-output '.SecretString' | jq -r .password)
+export RDS_DB_USERNAME64=`echo ${RDS_DB_USERNAME} | base64`
+export RDS_DB_PASSWORD64=`echo ${RDS_DB_PASSWORD} | base64`
 export DB_CREDS="db-creds"
 print_environment
 fix_git
