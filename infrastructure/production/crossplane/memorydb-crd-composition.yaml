@@ -40,6 +40,8 @@ spec:
                   type: number
                 instanceClass:
                   type: string
+                vpcId:
+                  type: string
                 connectionInfoSecret:
                   type: string
                 connectionInfoCM:
