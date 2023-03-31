@@ -126,7 +126,7 @@ function fix_git()
    	-e "s/<apgSubnetId1>/$SUBNET_ID_1/g" \
    	-e "s/<apgSubnetId2>/$SUBNET_ID_2/g" \
    	-e "s/<apgSubnetId3>/$SUBNET_ID_3/g" \
-   	-e "s/<vpcIDs>/$VPCID/g" \
+   	-e "s/<vpcID>/$VPCID/g" \
    	-e "s/<cidrBlock>/$CIDR_BLOCK/g" \
 	-e "s/<db-creds>/$DB_CREDS/g" \
 	-e "s/<memorydbSubnetId1>/$MEMDB_SUBNET_ID_1/g" \
@@ -490,8 +490,8 @@ chk_cloud9_permission
 create_secret
 export RDS_DB_USERNAME=$(aws secretsmanager get-secret-value --secret-id dbCredential  | jq --raw-output '.SecretString' | jq -r .dbuser)
 export RDS_DB_PASSWORD=$(aws secretsmanager get-secret-value --secret-id dbCredential  | jq --raw-output '.SecretString' | jq -r .password)
-export RDS_DB_USERNAME64=`echo ${RDS_DB_USERNAME} | base64`
-export RDS_DB_PASSWORD64=`echo ${RDS_DB_PASSWORD} | base64`
+export RDS_DB_USERNAME64=`echo -n ${RDS_DB_USERNAME} | base64`
+export RDS_DB_PASSWORD64=`echo -n ${RDS_DB_PASSWORD} | base64`
 export DB_CREDS="db-creds"
 print_environment
 fix_git

@@ -46,6 +46,8 @@ spec:
                   type: string
                 connectionInfoCM:
                   type: string
+                k8sResourceConfig:
+                  type: string
                 resourceConfig:
                   type: object
                   description: ResourceConfig defines general properties of this AWS resource.
@@ -62,7 +64,7 @@ spec:
                 - instanceClass
                 - connectionInfoSecret
                 - connectionInfoCM
-
+                - k8sResourceConfig
 --- 
 
 apiVersion: apiextensions.crossplane.io/v1
@@ -255,3 +257,5 @@ spec:
           toFieldPath: "spec.references[0].patchesFrom.namespace"
         - fromFieldPath: "spec.connectionInfoCM"
           toFieldPath: "metadata.name"
+        - fromFieldPath: "spec.k8sResourceConfig"
+          toFieldPath: "spec.providerConfigRef.name"

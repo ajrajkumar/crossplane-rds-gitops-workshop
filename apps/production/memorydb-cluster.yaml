@@ -20,3 +20,4 @@ spec:
   name: retailapp-memorydb
   resourceConfig:
     providerConfigName: provider-aws
+  k8sResourceConfig: provider-kubernetes
