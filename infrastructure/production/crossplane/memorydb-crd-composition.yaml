@@ -244,10 +244,11 @@ spec:
             references:
               - patchesFrom:
                    apiVersion: memorydb.aws.upbound.io/v1beta1
-                   fieldPath: data.memorydb-cluster-host
+                   fieldPath: status.atProvider.clusterEndpoint[0].address 
                    kind: Cluster
                    name: retailapp-memorydb
                    namespace: to-be-patched
+                toFieldPath: data.memorydb-cluster-host
       patches:
         - type: PatchSet
           patchSetName: common-fields

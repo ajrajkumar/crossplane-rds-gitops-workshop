@@ -73,10 +73,7 @@ spec:
                  name: memorydb-cluster-conn-cm
                  key: memorydb-cluster-host
           - name: MEMDB_PORT
-            valueFrom:
-              configMapKeyRef:
-                 name: memorydb-cluster-conn-cm
-                 key: memorydb-cluster-port
+            value : "6379"
           - name: MEMDB_USER
             valueFrom:
               secretKeyRef:
@@ -163,10 +160,7 @@ spec:
                  name: memorydb-cluster-conn-cm
                  key: memorydb-cluster-host
           - name: MEMDB_PORT
-            valueFrom:
-              configMapKeyRef:
-                 name: memorydb-cluster-conn-cm
-                 key: memorydb-cluster-port
+            value : "6379"
           - name: MEMDB_USER
             valueFrom:
               secretKeyRef:
@@ -253,10 +247,7 @@ spec:
                  name: memorydb-cluster-conn-cm
                  key: memorydb-cluster-host
           - name: MEMDB_PORT
-            valueFrom:
-              configMapKeyRef:
-                 name: memorydb-cluster-conn-cm
-                 key: memorydb-cluster-port
+            value : "6379"
           - name: MEMDB_USER
             valueFrom:
               secretKeyRef:
@@ -363,10 +354,7 @@ spec:
                  name: memorydb-cluster-conn-cm
                  key: memorydb-cluster-host
           - name: MEMDB_PORT
-            valueFrom:
-              configMapKeyRef:
-                 name: memorydb-cluster-conn-cm
-                 key: memorydb-cluster-port
+            value : "6379"
           - name: MEMDB_USER
             valueFrom:
               secretKeyRef:
@@ -453,10 +441,7 @@ spec:
                  name: memorydb-cluster-conn-cm
                  key: memorydb-cluster-host
           - name: MEMDB_PORT
-            valueFrom:
-              configMapKeyRef:
-                 name: memorydb-cluster-conn-cm
-                 key: memorydb-cluster-port
+            value : "6379"
           - name: MEMDB_USER
             valueFrom:
               secretKeyRef:
