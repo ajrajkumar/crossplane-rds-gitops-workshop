@@ -246,7 +246,7 @@ spec:
                    apiVersion: memorydb.aws.upbound.io/v1beta1
                    fieldPath: data.memorydb-cluster-host
                    kind: Cluster
-                   name: memorydb-cross-instance
+                   name: retailapp-memorydb
                    namespace: to-be-patched
       patches:
         - type: PatchSet
