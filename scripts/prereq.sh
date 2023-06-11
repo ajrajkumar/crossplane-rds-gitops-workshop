@@ -499,10 +499,10 @@ update_kubeconfig
 chk_cloud9_permission
 update_eks
 chk_cloud9_permission
-#install_crossplane
+install_crossplane
 setup_irsa
-#install_aws_provider
-#install_k8s_provider
+install_aws_provider
+install_k8s_provider
 install_loadbalancer
 chk_installation
 chk_cloud9_permission
